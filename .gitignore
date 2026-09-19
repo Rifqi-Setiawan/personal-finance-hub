@@ -1,0 +1,43 @@
+# Python bytecode & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+env/
+venv/
+ENV/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+credentials/
+*.json
+*.pem
+*.key
+
+# Data & Database storage
+data/
+*.duckdb
+*.duckdb.wal
+
+# Temporary verification & helper scratchpad scripts
+check_duckdb.py
+reorganize_dashboard.py
+verify_*.py
+
+# Pytest, coverage & profiling
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor & IDE configurations
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

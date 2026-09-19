@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personal Finance Hub — Dashboard Analitika Keuangan Pribadi</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', 'monospace'],
+          },
+          colors: {
+            surface: {
+              DEFAULT: '#0b0f19',
+              card: '#111726',
+              cardHover: '#151d30',
+              subtle: '#192238',
+              border: '#1e293b',
+              borderLight: 'rgba(255, 255, 255, 0.08)',
+            },
+            accent: {
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              cyan: '#06b6d4',
+              amber: '#f59e0b',
+              indigo: '#6366f1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Technical & Anti-AI-Slop Typography Baseline */
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      background-color: #07090e;
+      color: #f1f5f9;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    .tracking-tight-display {
+      letter-spacing: -0.03em;
+    }
+    .tracking-tighter-num {
+      letter-spacing: -0.04em;
+    }
+
+    /* Hairline border styling */
+    .hairline-border {
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .hairline-border-b {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .hairline-border-t {
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    /* Subtle custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #07090e;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* Masked value animation */
+    .masked-value {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.15em;
+      filter: blur(0px);
+      transition: filter 0.2s ease, opacity 0.2s ease;
+    }
+    .balance-hidden .masked-target {
+      display: none !important;
+    }
+    .balance-hidden .masked-placeholder {
+      display: inline-block !important;
+    }
+    .masked-placeholder {
+      display: none;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.15em;
+      color: #94a3b8;
+    }
+
+    /* Micro indicator pulses */
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.96); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* Donut chart segment hover */
+    .donut-slice {
+      transition: stroke-width 0.2s ease, opacity 0.2s ease;
+      cursor: pointer;
+    }
+    .donut-slice:hover {
+      opacity: 0.85;
+      stroke-width: 22;
+    }
+
+    /* Chart bars */
+    .chart-bar-group {
+      transition: opacity 0.15s ease;
+      cursor: pointer;
+    }
+    .chart-bar-group:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col font-sans selection:bg-emerald-500/20 selection:text-emerald-300">
+
+  <!-- ========================================================================= -->
+  <!-- TOP HEADER / NAVIGATION -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-40 bg-[#090d16]/90 backdrop-blur-md hairline-border-b px-4 lg:px-8 py-3">
+    <div class="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-3">
+      
+      <!-- Brand & Workspace Breadcrumb -->
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-semibold shadow-inner shadow-emerald-500/20">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-slate-100 text-sm tracking-tight">Personal Finance Hub</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono uppercase font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              Stage 1 Mockup
+            </span>
+            <span class="text-xs text-slate-500 hidden sm:inline">•</span>
+            <span class="text-xs text-slate-400 hidden sm:inline">Rifqi Studio OS</span>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-subtle"></span>
+            <span>Mutasi Terkini: 19 Sep 2026, 14:20 WIB</span>
+            <span class="text-slate-600">|</span>
+            <span class="text-slate-400">Semua Rekening Tersinkronisasi</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Stage 1 Scope: Dashboard Tab Highlighted) -->
+      <nav class="flex items-center gap-1 bg-[#0d121f] p-1 rounded-lg hairline-border text-xs">
+        <a href="#dashboard" class="px-3 py-1.5 rounded-md font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a href="#mutasi" onclick="showToast('Tab Ledger Mutasi akan diimplementasikan pada Tahap 2')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition">
+          Mutasi
+        </a>
+        <a href="#anggaran" onclick="showToast('Tab Anggaran & Kategori akan diimplementasikan pada Tahap 2')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition">
+          Anggaran
+        </a>
+        <a href="#akun" onclick="showToast('Tab Akun & Rekening akan diimplementasikan pada Tahap 2')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition">
+          Akun & Saldo
+        </a>
+        <a href="#analitika" onclick="showToast('Tab Analitika & Runway akan diimplementasikan pada Tahap 2')" class="px-3 py-1.5 rounded-md font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 transition hidden md:block">
+          Analitika
+        </a>
+      </nav>
+
+      <!-- Global Actions: Privacy Toggle, Quick Add, User -->
+      <div class="flex items-center gap-2">
+        <!-- Privacy Eye Toggle -->
+        <button id="toggle-privacy-btn" onclick="togglePrivacyMode()" title="Sembunyikan / Tampilkan Angka Saldo" class="p-2 rounded-lg bg-[#0d121f] hairline-border text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-1.5 text-xs font-medium">
+          <svg id="eye-icon-open" class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg id="eye-icon-closed" class="w-4 h-4 text-amber-400 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-.722-3.25"/><path d="M2 8a10.645 10.645 0 0 0 20 0"/><path d="m20 15-1.726-2.05"/><path d="m4 15 1.726-2.05"/><path d="m9 18 .722-3.25"/>
+          </svg>
+          <span class="hidden xl:inline" id="privacy-btn-label">Mask Saldo</span>
+        </button>
+
+        <!-- Quick Add Transaction Modal Trigger -->
+        <button onclick="openModal('add-tx-modal')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs flex items-center gap-1.5 transition shadow-sm shadow-emerald-700/20 active:scale-95">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Catat Transaksi</span>
+        </button>
+
+        <!-- User Profile Pill -->
+        <div class="flex items-center gap-2 pl-1 border-l border-slate-800">
+          <div class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-semibold text-slate-200" title="Rifqi Setiawan">
+            RS
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTAINER -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- SUB-HEADER CONTEXT BAR: PERIOD CONTROLS & TIMELINE STATUS -->
+    <section class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0e1320] hairline-border rounded-xl p-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-lg font-bold text-slate-100 tracking-tight-display">Ringkasan Finansial Personal</h1>
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700/60">
+            September 2026
+          </span>
+        </div>
+        <p class="text-xs text-slate-400 mt-0.5">
+          Siklus Anggaran: <span class="text-slate-200 font-medium">Hari ke-19 dari 30</span> (63.3% bulan berjalan) • Tersisa 11 hari menuju tanggal gajian berikutnya
+        </p>
+      </div>
+
+      <!-- Period Filter & Export Actions -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="inline-flex rounded-lg bg-[#080b12] p-0.5 hairline-border text-xs">
+          <button class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition" onclick="selectPeriod('Agu 2026')">Agu 2026</button>
+          <button class="px-2.5 py-1 rounded-md font-medium bg-slate-800 text-white shadow-sm border border-slate-700/50" onclick="selectPeriod('Sep 2026')">Sep 2026 (Aktif)</button>
+          <button class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition" onclick="selectPeriod('Q3 2026')">Q3 2026</button>
+          <button class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition hidden sm:inline-block" onclick="selectPeriod('YTD 2026')">YTD</button>
+        </div>
+
+        <button onclick="exportData()" class="px-2.5 py-1 rounded-lg bg-[#080b12] hairline-border hover:bg-slate-800 text-slate-300 text-xs font-medium flex items-center gap-1.5 transition">
+          <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          <span>Ekspor CSV</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 1. 4 KPI UTAMA (KEY PERFORMANCE INDICATORS) -->
+    <!-- ========================================================================= -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+      <!-- KPI 1: TOTAL PEMASUKAN -->
+      <div class="bg-[#0f1422] hairline-border rounded-xl p-5 hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Total Pemasukan</span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            +14.2%
+          </span>
+        </div>
+        
+        <div class="mt-3">
+          <div class="text-2xl lg:text-3xl font-bold font-mono tracking-tighter-num text-white tabular-nums">
+            <span class="masked-target">Rp 38.500.000</span>
+            <span class="masked-placeholder">Rp ••••••••</span>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>vs Rp 33.700.000 bulan lalu</span>
+            <span class="text-emerald-400 font-medium">+Rp 4.800.000</span>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+          <div>
+            <span class="text-slate-500">Gaji:</span> <span class="text-slate-300 font-mono tabular-nums masked-target">Rp 28.5M</span><span class="masked-placeholder text-slate-400 font-mono">•••</span>
+          </div>
+          <span class="text-slate-700">|</span>
+          <div>
+            <span class="text-slate-500">Consulting & Gig:</span> <span class="text-slate-300 font-mono tabular-nums masked-target">Rp 10.0M</span><span class="masked-placeholder text-slate-400 font-mono">•••</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI 2: TOTAL PENGELUARAN -->
+      <div class="bg-[#0f1422] hairline-border rounded-xl p-5 hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Total Pengeluaran</span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded" title="Pengeluaran 6.8% di bawah pacing batas pagu">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            -6.8% Pacing
+          </span>
+        </div>
+        
+        <div class="mt-3">
+          <div class="text-2xl lg:text-3xl font-bold font-mono tracking-tighter-num text-rose-400 tabular-nums">
+            <span class="masked-target">Rp 14.820.000</span>
+            <span class="masked-placeholder text-rose-400">Rp ••••••••</span>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>Alokasi Pagu Anggaran</span>
+            <span class="text-slate-200 font-medium font-mono tabular-nums">67.4% dari Rp 22.0M</span>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+          <div>
+            <span class="text-slate-500">Rasio Belanja:</span> <span class="text-slate-300 font-mono tabular-nums">38.5% dari Pemasukan</span>
+          </div>
+          <span class="text-emerald-400 font-medium text-[10px] bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">Controlled</span>
+        </div>
+      </div>
+
+      <!-- KPI 3: NET SAVINGS (TABUNGAN BERSIH) -->
+      <div class="bg-[#0f1422] hairline-border rounded-xl p-5 hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Net Savings (Surplus)</span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+            +32.4% MoM
+          </span>
+        </div>
+        
+        <div class="mt-3">
+          <div class="text-2xl lg:text-3xl font-bold font-mono tracking-tighter-num text-emerald-400 tabular-nums">
+            <span class="masked-target">Rp 23.680.000</span>
+            <span class="masked-placeholder text-emerald-400">Rp ••••••••</span>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>Surplus Bersih Bulan Ini</span>
+            <span class="text-emerald-400 font-medium">+Rp 5.880.000 vs Agu</span>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+          <span class="text-slate-500">Alokasi Kas:</span>
+          <span class="text-slate-300 text-[11px]">80% Portofolio • 20% Emergency</span>
+        </div>
+      </div>
+
+      <!-- KPI 4: SAVINGS RATE (%) -->
+      <div class="bg-[#0f1422] hairline-border rounded-xl p-5 hover:border-slate-700 transition relative overflow-hidden group">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">Savings Rate</span>
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-1.5 py-0.5 rounded">
+            Target: ≥ 50.0%
+          </span>
+        </div>
+        
+        <div class="mt-3">
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl lg:text-3xl font-bold font-mono tracking-tighter-num text-white tabular-nums">
+              61.5%
+            </span>
+            <span class="text-xs font-semibold text-emerald-400 font-mono">+11.5% di atas target</span>
+          </div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>Benchmark Status</span>
+            <span class="text-cyan-300 font-medium">Optimal (High Resilience)</span>
+          </div>
+        </div>
+
+        <!-- Visual target vs current mini bar -->
+        <div class="mt-4 pt-3 border-t border-slate-800/80">
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden flex">
+            <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 61.5%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-1">
+            <span>0%</span>
+            <span class="text-slate-400">Target 50%</span>
+            <span class="text-emerald-400">Capai 61.5%</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 2. BUDGET PACING & DAILY BURN RATE METRIC STRIP -->
+    <!-- ========================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      
+      <!-- Anggaran Bulanan & Pacing (7 cols) -->
+      <div class="lg:col-span-7 bg-[#0f1422] hairline-border rounded-xl p-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-slate-100 tracking-tight">Status Pagu Anggaran Bulanan</h2>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">Pagu: Rp 22.000.000</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Pemakaian riil vs batas pagu bulanan (19/30 hari berjalan)</p>
+          </div>
+          <div class="text-right">
+            <div class="text-sm font-bold font-mono text-emerald-400 tabular-nums">
+              <span class="masked-target">Sisa: Rp 7.180.000</span>
+              <span class="masked-placeholder">Sisa: Rp ••••••••</span>
+            </div>
+            <span class="text-[11px] text-slate-400">32.6% sisa pagu tersedia</span>
+          </div>
+        </div>
+
+        <!-- Multi-segment Progress Bar -->
+        <div class="mt-4">
+          <div class="h-3 w-full bg-slate-800/80 rounded-lg overflow-hidden flex p-0.5 gap-0.5">
+            <!-- Living/Groceries: 42.1% of spent -->
+            <div class="bg-indigo-500 rounded-sm" style="width: 28.4%" title="Kebutuhan Pokok & Rumah: Rp 6.25M (28.4% dari total pagu)"></div>
+            <!-- Transport & Tech: 23% of spent -->
+            <div class="bg-cyan-500 rounded-sm" style="width: 16.2%" title="Tech & Mobilitas: Rp 3.57M (16.2% dari total pagu)"></div>
+            <!-- Lifestyle & Misc: 34.9% of spent -->
+            <div class="bg-rose-500 rounded-sm" style="width: 22.8%" title="Gaya Hidup & Ops: Rp 5.00M (22.8% dari total pagu)"></div>
+            <!-- Unused budget remaining: 32.6% -->
+            <div class="bg-slate-700/40 rounded-sm flex-1" title="Sisa Plafon Anggaran: Rp 7.18M (32.6%)"></div>
+          </div>
+        </div>
+
+        <!-- Progress legend & burn recommendation -->
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-y-2 text-xs">
+          <div class="flex items-center gap-3 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-indigo-500"></span>Pokok (28.4%)</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-cyan-500"></span>Tech & Mobilitas (16.2%)</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Lifestyle & Ops (22.8%)</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-600"></span>Sisa Kuota (32.6%)</span>
+          </div>
+          
+          <div class="text-[11px] font-mono text-slate-300 bg-slate-900 px-2.5 py-1 rounded border border-slate-800">
+            Batas Belanja Aman: <span class="text-emerald-400 font-semibold tabular-nums">Rp 652.727 / hari</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Burn Rate & Runway Card (5 cols) -->
+      <div class="lg:col-span-5 bg-[#0f1422] hairline-border rounded-xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold text-slate-100 tracking-tight">Daily Burn Rate & Runway</h2>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+              Status Stabil
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Kecepatan pengeluaran harian dan ketahanan cadangan dana</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 my-3">
+          <!-- Metric 1: Burn Rate -->
+          <div class="bg-[#080b12] p-3 rounded-lg border border-slate-800/80">
+            <span class="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Burn Rate Harian</span>
+            <div class="text-xl font-bold font-mono text-white mt-1 tabular-nums">
+              <span class="masked-target">Rp 780.000</span>
+              <span class="masked-placeholder">Rp ••••••</span>
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
+              <span class="text-emerald-400 font-medium">Batas: Rp 800k/hr</span>
+              <span>(Optimal)</span>
+            </div>
+          </div>
+
+          <!-- Metric 2: Liquidity Runway -->
+          <div class="bg-[#080b12] p-3 rounded-lg border border-slate-800/80">
+            <span class="text-[10px] font-semibold uppercase text-slate-400 tracking-wider">Operational Runway</span>
+            <div class="text-xl font-bold font-mono text-cyan-400 mt-1 tabular-nums">
+              14.2 Bulan
+            </div>
+            <div class="text-[10px] text-slate-400 mt-0.5">
+              Basis: Dana Likuid Rp 210M
+            </div>
+          </div>
+        </div>
+
+        <!-- Micro Runway Note -->
+        <div class="text-[11px] text-slate-400 flex items-center justify-between pt-2 border-t border-slate-800/80">
+          <span>Cadangan darurat aman dari shock pengeluaran 12 bulan ke depan.</span>
+          <span class="text-emerald-400 font-mono text-[10px]">Tier A+</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 3. ANALYTICAL CHARTS: CASHFLOW TREND & CATEGORY SPENDING (7:5 SPLIT) -->
+    <!-- ========================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      
+      <!-- MONTHLY CASHFLOW TREND (7 cols) -->
+      <div class="lg:col-span-7 bg-[#0f1422] hairline-border rounded-xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-bold text-slate-100 tracking-tight">Tren Arus Kas (6 Bulan Terakhir)</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Perbandingan realisasi Pemasukan vs Pengeluaran (Apr 2026 – Sep 2026)</p>
+            </div>
+            
+            <!-- Chart Legend -->
+            <div class="flex items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5 text-slate-300">
+                <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span>
+                Pemasukan
+              </span>
+              <span class="flex items-center gap-1.5 text-slate-300">
+                <span class="w-2.5 h-2.5 rounded-sm bg-rose-500"></span>
+                Pengeluaran
+              </span>
+              <span class="flex items-center gap-1.5 text-slate-300">
+                <span class="w-2 h-0.5 bg-cyan-400"></span>
+                Net Margin
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SVG Interactive Cash Flow Chart (Anti-AI-Slop: Y-Axis Starts at 0, Clear Tabular Gridlines) -->
+        <div class="mt-6 relative">
+          <div class="w-full h-64">
+            <svg viewBox="0 0 640 240" class="w-full h-full overflow-visible font-mono text-[10px]">
+              <!-- Grid lines & Y-labels (0 to 45M) -->
+              <!-- 40M -->
+              <line x1="45" y1="25" x2="630" y2="25" stroke="#1e293b" stroke-dasharray="3 3" />
+              <text x="40" y="29" fill="#64748b" text-anchor="end">40M</text>
+              
+              <!-- 30M -->
+              <line x1="45" y1="75" x2="630" y2="75" stroke="#1e293b" stroke-dasharray="3 3" />
+              <text x="40" y="79" fill="#64748b" text-anchor="end">30M</text>
+
+              <!-- 20M -->
+              <line x1="45" y1="125" x2="630" y2="125" stroke="#1e293b" stroke-dasharray="3 3" />
+              <text x="40" y="129" fill="#64748b" text-anchor="end">20M</text>
+
+              <!-- 10M -->
+              <line x1="45" y1="175" x2="630" y2="175" stroke="#1e293b" stroke-dasharray="3 3" />
+              <text x="40" y="179" fill="#64748b" text-anchor="end">10M</text>
+
+              <!-- 0 Baseline (Y begins at 0) -->
+              <line x1="45" y1="210" x2="630" y2="210" stroke="#334155" stroke-width="1.5" />
+              <text x="40" y="214" fill="#64748b" text-anchor="end">0</text>
+
+              <!-- Months Bars & Line -->
+              <!-- 1. Apr 2026: Inc 32.0M (h=147px, y=63), Exp 13.5M (h=62px, y=148), Net 18.5M -->
+              <g class="chart-bar-group" onmouseover="showChartTooltip(event, 'April 2026', 'Rp 32.000.000', 'Rp 13.500.000', 'Rp 18.500.000', '57.8%')" onmouseout="hideChartTooltip()">
+                <rect x="75" y="63" width="22" height="147" rx="3" fill="#10b981" fill-opacity="0.85" />
+                <rect x="101" y="148" width="22" height="62" rx="3" fill="#f43f5e" fill-opacity="0.85" />
+                <text x="99" y="226" fill="#94a3b8" text-anchor="middle">Apr</text>
+              </g>
+
+              <!-- 2. Mei 2026: Inc 34.5M (h=158px, y=52), Exp 15.2M (h=70px, y=140), Net 19.3M -->
+              <g class="chart-bar-group" onmouseover="showChartTooltip(event, 'Mei 2026', 'Rp 34.500.000', 'Rp 15.200.000', 'Rp 19.300.000', '55.9%')" onmouseout="hideChartTooltip()">
+                <rect x="165" y="52" width="22" height="158" rx="3" fill="#10b981" fill-opacity="0.85" />
+                <rect x="191" y="140" width="22" height="70" rx="3" fill="#f43f5e" fill-opacity="0.85" />
+                <text x="189" y="226" fill="#94a3b8" text-anchor="middle">Mei</text>
+              </g>
+
+              <!-- 3. Jun 2026: Inc 33.0M (h=151px, y=59), Exp 16.8M (h=77px, y=133), Net 16.2M -->
+              <g class="chart-bar-group" onmouseover="showChartTooltip(event, 'Juni 2026', 'Rp 33.000.000', 'Rp 16.800.000', 'Rp 16.200.000', '49.1%')" onmouseout="hideChartTooltip()">
+                <rect x="255" y="59" width="22" height="151" rx="3" fill="#10b981" fill-opacity="0.85" />
+                <rect x="281" y="133" width="22" height="77" rx="3" fill="#f43f5e" fill-opacity="0.85" />
+                <text x="279" y="226" fill="#94a3b8" text-anchor="middle">Jun</text>
+              </g>
+
+              <!-- 4. Jul 2026: Inc 36.0M (h=165px, y=45), Exp 14.2M (h=65px, y=145), Net 21.8M -->
+              <g class="chart-bar-group" onmouseover="showChartTooltip(event, 'Juli 2026', 'Rp 36.000.000', 'Rp 14.200.000', 'Rp 21.800.000', '60.5%')" onmouseout="hideChartTooltip()">
+                <rect x="345" y="45" width="22" height="165" rx="3" fill="#10b981" fill-opacity="0.85" />
+                <rect x="371" y="145" width="22" height="65" rx="3" fill="#f43f5e" fill-opacity="0.85" />
+                <text x="369" y="226" fill="#94a3b8" text-anchor="middle">Jul</text>
+              </g>
+
+              <!-- 5. Agu 2026: Inc 33.7M (h=155px, y=55), Exp 15.9M (h=73px, y=137), Net 17.8M -->
+              <g class="chart-bar-group" onmouseover="showChartTooltip(event, 'Agustus 2026', 'Rp 33.700.000', 'Rp 15.900.000', 'Rp 17.800.000', '52.8%')" onmouseout="hideChartTooltip()">
+                <rect x="435" y="55" width="22" height="155" rx="3" fill="#10b981" fill-opacity="0.85" />
+                <rect x="461" y="137" width="22" height="73" rx="3" fill="#f43f5e" fill-opacity="0.85" />
+                <text x="459" y="226" fill="#94a3b8" text-anchor="middle">Agu</text>
+              </g>
+
+              <!-- 6. Sep 2026 (MTD): Inc 38.5M (h=177px, y=33), Exp 14.82M (h=68px, y=142), Net 23.68M -->
+              <g class="chart-bar-group" onmouseover="showChartTooltip(event, 'September 2026 (MTD)', 'Rp 38.500.000', 'Rp 14.820.000', 'Rp 23.680.000', '61.5%')" onmouseout="hideChartTooltip()">
+                <!-- Highlight current active month background -->
+                <rect x="520" y="20" width="70" height="190" rx="4" fill="#06b6d4" fill-opacity="0.04" stroke="#06b6d4" stroke-opacity="0.2" stroke-dasharray="2 2" />
+                <rect x="528" y="33" width="22" height="177" rx="3" fill="#10b981" />
+                <rect x="554" y="142" width="22" height="68" rx="3" fill="#f43f5e" />
+                <text x="552" y="226" fill="#38bdf8" font-weight="600" text-anchor="middle">Sep (MTD)</text>
+              </g>
+
+              <!-- Net Savings Polyline & Dots -->
+              <!-- Apr: x=99, y=125 | Mei: x=189, y=121 | Jun: x=279, y=136 | Jul: x=369, y=110 | Agu: x=459, y=128 | Sep: x=552, y=101 -->
+              <polyline points="99,125 189,121 279,136 369,110 459,128 552,101" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linejoin="round" />
+              <circle cx="99" cy="125" r="3.5" fill="#0e1320" stroke="#38bdf8" stroke-width="2" />
+              <circle cx="189" cy="121" r="3.5" fill="#0e1320" stroke="#38bdf8" stroke-width="2" />
+              <circle cx="279" cy="136" r="3.5" fill="#0e1320" stroke="#38bdf8" stroke-width="2" />
+              <circle cx="369" cy="110" r="3.5" fill="#0e1320" stroke="#38bdf8" stroke-width="2" />
+              <circle cx="459" cy="128" r="3.5" fill="#0e1320" stroke="#38bdf8" stroke-width="2" />
+              <circle cx="552" cy="101" r="4.5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" />
+            </svg>
+          </div>
+
+          <!-- Dynamic Floating Tooltip -->
+          <div id="chart-tooltip" class="absolute hidden z-20 pointer-events-none bg-[#090d16] border border-slate-700 text-xs rounded-lg p-3 shadow-xl backdrop-blur-md">
+            <div id="tt-month" class="font-bold text-slate-200 border-b border-slate-800 pb-1 mb-1.5">September 2026</div>
+            <div class="space-y-1 font-mono text-[11px]">
+              <div class="flex justify-between gap-4 text-emerald-400">
+                <span>Pemasukan:</span> <span id="tt-inc" class="font-semibold tabular-nums">Rp 0</span>
+              </div>
+              <div class="flex justify-between gap-4 text-rose-400">
+                <span>Pengeluaran:</span> <span id="tt-exp" class="font-semibold tabular-nums">Rp 0</span>
+              </div>
+              <div class="flex justify-between gap-4 text-cyan-400 border-t border-slate-800/60 pt-1">
+                <span>Surplus:</span> <span id="tt-net" class="font-semibold tabular-nums">Rp 0</span>
+              </div>
+              <div class="flex justify-between gap-4 text-slate-400 text-[10px]">
+                <span>Savings Rate:</span> <span id="tt-rate" class="font-semibold text-slate-200">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Footer -->
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between text-xs text-slate-400">
+          <div class="flex items-center gap-4">
+            <span>Rata-rata Pemasukan: <strong class="text-slate-200 font-mono tabular-nums">Rp 34.6M/bln</strong></span>
+            <span>Rata-rata Pengeluaran: <strong class="text-slate-200 font-mono tabular-nums">Rp 15.1M/bln</strong></span>
+          </div>
+          <div class="text-emerald-400 font-mono font-medium">
+            Rata-rata Savings Rate H1: 56.3%
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY SPENDING BREAKDOWN (5 cols) -->
+      <div class="lg:col-span-5 bg-[#0f1422] hairline-border rounded-xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-100 tracking-tight">Alokasi Belanja per Kategori</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Total Realisasi: <span class="font-mono text-slate-200 font-semibold tabular-nums masked-target">Rp 14.820.000</span><span class="masked-placeholder">Rp ••••••••</span></p>
+            </div>
+            <span class="text-[11px] font-mono text-slate-400 bg-slate-800/70 px-2 py-0.5 rounded border border-slate-700">6 Kategori</span>
+          </div>
+
+          <!-- Donut Graphic + Highlight in Center -->
+          <div class="my-4 flex items-center justify-center gap-6">
+            <div class="relative w-36 h-36 flex items-center justify-center">
+              <svg viewBox="0 0 100 100" class="w-full h-full transform -rotate-90">
+                <!-- Slices: Circumference = 2 * PI * 38 = 238.76 -->
+                <!-- 1. Perumahan (30.4%): len = 72.58, offset = 0 -->
+                <circle class="donut-slice text-indigo-500" cx="50" cy="50" r="38" fill="transparent" stroke="currentColor" stroke-width="16" stroke-dasharray="72.58 166.18" stroke-dashoffset="0" onclick="highlightCategory('Perumahan & Tagihan', 'Rp 4.500.000', '30.4%')"/>
+                <!-- 2. Groceries (26.0%): len = 62.08, offset = -72.58 -->
+                <circle class="donut-slice text-cyan-500" cx="50" cy="50" r="38" fill="transparent" stroke="currentColor" stroke-width="16" stroke-dasharray="62.08 176.68" stroke-dashoffset="-72.58" onclick="highlightCategory('Makanan & Groceries', 'Rp 3.850.000', '26.0%')"/>
+                <!-- 3. Transportasi (13.0%): len = 31.04, offset = -134.66 -->
+                <circle class="donut-slice text-emerald-500" cx="50" cy="50" r="38" fill="transparent" stroke="currentColor" stroke-width="16" stroke-dasharray="31.04 207.72" stroke-dashoffset="-134.66" onclick="highlightCategory('Transportasi & Mobilitas', 'Rp 1.920.000', '13.0%')"/>
+                <!-- 4. Cloud & SaaS (11.1%): len = 26.50, offset = -165.7 -->
+                <circle class="donut-slice text-amber-500" cx="50" cy="50" r="38" fill="transparent" stroke="currentColor" stroke-width="16" stroke-dasharray="26.50 212.26" stroke-dashoffset="-165.7" onclick="highlightCategory('Cloud, AI & Software', 'Rp 1.650.000', '11.1%')"/>
+                <!-- 5. Kesehatan (9.8%): len = 23.40, offset = -192.2 -->
+                <circle class="donut-slice text-rose-500" cx="50" cy="50" r="38" fill="transparent" stroke="currentColor" stroke-width="16" stroke-dasharray="23.40 215.36" stroke-dashoffset="-192.2" onclick="highlightCategory('Kesehatan & Edukasi', 'Rp 1.450.000', '9.8%')"/>
+                <!-- 6. Lifestyle (9.8%): len = 23.40, offset = -215.6 -->
+                <circle class="donut-slice text-purple-500" cx="50" cy="50" r="38" fill="transparent" stroke="currentColor" stroke-width="16" stroke-dasharray="23.40 215.36" stroke-dashoffset="-215.6" onclick="highlightCategory('Gaya Hidup & Leisure', 'Rp 1.450.000', '9.8%')"/>
+              </svg>
+              <!-- Center Metric inside Donut -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                <span id="donut-center-label" class="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Total Belanja</span>
+                <span id="donut-center-value" class="text-xs font-bold font-mono text-slate-100 tabular-nums">Rp 14.82M</span>
+                <span id="donut-center-sub" class="text-[9px] text-emerald-400 font-mono">19 Hari MTD</span>
+              </div>
+            </div>
+
+            <!-- Mini Summary Legend -->
+            <div class="text-xs space-y-1 text-slate-300">
+              <div class="text-[11px] text-slate-400">Klik segmen untuk detail:</div>
+              <div class="font-semibold text-slate-100 flex items-center gap-1.5" id="selected-cat-name">
+                <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Perumahan (30.4%)
+              </div>
+              <div class="text-xs font-mono text-slate-300 tabular-nums" id="selected-cat-amount">
+                Rp 4.500.000 / Pagu Rp 5.00M
+              </div>
+              <div class="text-[10px] text-emerald-400" id="selected-cat-status">
+                Terkendali (90% plafon tercapai)
+              </div>
+            </div>
+          </div>
+
+          <!-- Structured Category Table with Micro Progress Bars -->
+          <div class="space-y-2.5 mt-2">
+            <!-- Item 1 -->
+            <div class="group p-2 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition">
+              <div class="flex items-center justify-between text-xs">
+                <span class="flex items-center gap-2 font-medium text-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                  Perumahan & Tagihan Utilitas
+                </span>
+                <div class="font-mono text-right">
+                  <span class="text-slate-100 font-semibold tabular-nums masked-target">Rp 4.500.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                  <span class="text-slate-400 text-[11px] ml-1.5">(30.4%)</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                <div class="bg-indigo-500 h-1 rounded-full" style="width: 90%"></div>
+              </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="group p-2 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition">
+              <div class="flex items-center justify-between text-xs">
+                <span class="flex items-center gap-2 font-medium text-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                  Bahan Makanan & Supermarket
+                </span>
+                <div class="font-mono text-right">
+                  <span class="text-slate-100 font-semibold tabular-nums masked-target">Rp 3.850.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                  <span class="text-slate-400 text-[11px] ml-1.5">(26.0%)</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                <div class="bg-cyan-500 h-1 rounded-full" style="width: 85.5%"></div>
+              </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="group p-2 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition">
+              <div class="flex items-center justify-between text-xs">
+                <span class="flex items-center gap-2 font-medium text-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Transportasi & Mobilitas Harian
+                </span>
+                <div class="font-mono text-right">
+                  <span class="text-slate-100 font-semibold tabular-nums masked-target">Rp 1.920.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                  <span class="text-slate-400 text-[11px] ml-1.5">(13.0%)</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                <div class="bg-emerald-500 h-1 rounded-full" style="width: 76.8%"></div>
+              </div>
+            </div>
+
+            <!-- Item 4 -->
+            <div class="group p-2 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition">
+              <div class="flex items-center justify-between text-xs">
+                <span class="flex items-center gap-2 font-medium text-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                  Cloud, Server & Software Subscriptions
+                </span>
+                <div class="font-mono text-right">
+                  <span class="text-slate-100 font-semibold tabular-nums masked-target">Rp 1.650.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                  <span class="text-slate-400 text-[11px] ml-1.5">(11.1%)</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                <div class="bg-amber-500 h-1 rounded-full" style="width: 82.5%"></div>
+              </div>
+            </div>
+
+            <!-- Item 5 -->
+            <div class="group p-2 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition">
+              <div class="flex items-center justify-between text-xs">
+                <span class="flex items-center gap-2 font-medium text-slate-200">
+                  <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                  Gaya Hidup, Buku & Leisure
+                </span>
+                <div class="font-mono text-right">
+                  <span class="text-slate-100 font-semibold tabular-nums masked-target">Rp 1.450.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                  <span class="text-slate-400 text-[11px] ml-1.5">(9.8%)</span>
+                </div>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1 mt-1.5 overflow-hidden">
+                <div class="bg-purple-500 h-1 rounded-full" style="width: 72.5%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+          <span class="text-[11px] text-slate-400">Semua pagu terverifikasi aman.</span>
+          <button onclick="showToast('Konfigurasi batas pagu akan dibuka di Tahap 2')" class="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1">
+            <span>Kelola Limit Pagu</span>
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 4. ACCOUNT BALANCES DISTRIBUTION & RECENT TRANSACTION LEDGER (4:8 SPLIT) -->
+    <!-- ========================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      
+      <!-- ACCOUNT BALANCES DISTRIBUTION (4 cols) -->
+      <div class="lg:col-span-4 bg-[#0f1422] hairline-border rounded-xl p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-bold text-slate-100 tracking-tight">Distribusi Saldo Rekening</h2>
+              <p class="text-xs text-slate-400 mt-0.5">Likuiditas Kas & Simpanan Siap Pakai</p>
+            </div>
+            <button onclick="refreshSync()" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition" title="Sinkronkan Saldo">
+              <svg id="sync-icon" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+            </button>
+          </div>
+
+          <!-- Total Net Worth Liquid -->
+          <div class="mt-4 p-3.5 rounded-lg bg-[#080b12] hairline-border">
+            <span class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Total Likuiditas Bersih</span>
+            <div class="text-2xl font-bold font-mono text-white mt-0.5 tracking-tight-display tabular-nums">
+              <span class="masked-target">Rp 184.650.000</span>
+              <span class="masked-placeholder">Rp ••••••••••••</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 mt-1">
+              <span>6 Akun Aktif Terhubung</span>
+              <span class="text-emerald-400 font-medium">100% Likuid</span>
+            </div>
+          </div>
+
+          <!-- Accounts List -->
+          <div class="space-y-2 mt-3.5">
+            
+            <!-- 1. BCA Tahapan -->
+            <div class="p-3 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-blue-950/60 border border-blue-800/50 flex items-center justify-center font-bold text-[11px] text-blue-400 font-mono">
+                  BCA
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">BCA Prioritas Tahapan</div>
+                  <div class="text-[10px] text-slate-500 font-mono">Rek: •••• 4829 • Payroll & Living</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-100 tabular-nums">
+                  <span class="masked-target">Rp 78.450.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                </div>
+                <span class="text-[10px] text-slate-400">42.5% porsi</span>
+              </div>
+            </div>
+
+            <!-- 2. Bank Mandiri -->
+            <div class="p-3 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-amber-950/60 border border-amber-800/50 flex items-center justify-center font-bold text-[11px] text-amber-400 font-mono">
+                  MDR
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">Bank Mandiri (Livin')</div>
+                  <div class="text-[10px] text-slate-500 font-mono">Rek: •••• 9102 • Tagihan & Bisnis</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-100 tabular-nums">
+                  <span class="masked-target">Rp 52.300.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                </div>
+                <span class="text-[10px] text-slate-400">28.3% porsi</span>
+              </div>
+            </div>
+
+            <!-- 3. Bibit RDPU (Pasar Uang) -->
+            <div class="p-3 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-emerald-950/60 border border-emerald-800/50 flex items-center justify-center font-bold text-[11px] text-emerald-400 font-mono">
+                  BBT
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">Bibit / RDPU Sucorinvest</div>
+                  <div class="text-[10px] text-emerald-400 font-mono">Yield Stash (5.8% p.a.)</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-100 tabular-nums">
+                  <span class="masked-target">Rp 45.000.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                </div>
+                <span class="text-[10px] text-slate-400">24.4% porsi</span>
+              </div>
+            </div>
+
+            <!-- 4. Kas Tunai / Brankas -->
+            <div class="p-3 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-[11px] text-slate-300 font-mono">
+                  KAS
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">Kas Fisik (Cash on Hand)</div>
+                  <div class="text-[10px] text-slate-500 font-mono">Dompet & Emergency Vault</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-100 tabular-nums">
+                  <span class="masked-target">Rp 3.600.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                </div>
+                <span class="text-[10px] text-slate-400">1.9% porsi</span>
+              </div>
+            </div>
+
+            <!-- 5. GoPay -->
+            <div class="p-3 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-cyan-950/60 border border-cyan-800/50 flex items-center justify-center font-bold text-[11px] text-cyan-400 font-mono">
+                  GPY
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">GoPay (Gojek / Tokopedia)</div>
+                  <div class="text-[10px] text-slate-500 font-mono">0812 •••• 4192 • Daily Transport</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-100 tabular-nums">
+                  <span class="masked-target">Rp 3.420.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                </div>
+                <span class="text-[10px] text-slate-400">1.8% porsi</span>
+              </div>
+            </div>
+
+            <!-- 6. DANA -->
+            <div class="p-3 rounded-lg bg-[#080b12] hairline-border hover:border-slate-700 transition flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-md bg-sky-950/60 border border-sky-800/50 flex items-center justify-center font-bold text-[11px] text-sky-400 font-mono">
+                  DNA
+                </div>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200">DANA Digital Wallet</div>
+                  <div class="text-[10px] text-slate-500 font-mono">0812 •••• 4192 • QRIS & Utility</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-bold font-mono text-slate-100 tabular-nums">
+                  <span class="masked-target">Rp 1.880.000</span>
+                  <span class="masked-placeholder">Rp ••••••••</span>
+                </div>
+                <span class="text-[10px] text-slate-400">1.0% porsi</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+          <span class="text-slate-500">Auto-reconciled via Open Banking</span>
+          <button onclick="showToast('Fitur tambah akun baru akan diaktifkan di Tahap 2')" class="text-slate-400 hover:text-white font-medium flex items-center gap-1">
+            <span>+ Akun Baru</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RECENT TRANSACTION LEDGER (8 cols) -->
+      <div class="lg:col-span-8 bg-[#0f1422] hairline-border rounded-xl p-5 flex flex-col justify-between">
+        <div>
+          <!-- Header & Filter Tabs -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/80">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-bold text-slate-100 tracking-tight">Buku Mutasi Transaksi Terakhir</h2>
+                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">Live Feed</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">Catatan transaksi mutasi masuk dan keluar real-time</p>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center gap-2">
+              <!-- Search box -->
+              <div class="relative">
+                <input type="text" id="tx-search-input" oninput="filterTransactions()" placeholder="Cari transaksi..." class="bg-[#080b12] hairline-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 w-36 sm:w-44">
+                <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </div>
+
+              <!-- Type Tab filter -->
+              <div class="inline-flex rounded-lg bg-[#080b12] p-0.5 hairline-border text-xs">
+                <button id="tab-all" onclick="filterType('ALL')" class="px-2.5 py-1 rounded-md font-medium bg-slate-800 text-white shadow-sm">Semua</button>
+                <button id="tab-exp" onclick="filterType('EXPENSE')" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition">Belanja</button>
+                <button id="tab-inc" onclick="filterType('INCOME')" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition">Masuk</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Table (High Density, Anti-AI-Slop, Tabular Nums) -->
+          <div class="overflow-x-auto mt-2">
+            <table class="w-full min-w-[720px] text-left border-collapse text-xs">
+              <thead>
+                <tr class="text-[10px] uppercase font-mono tracking-wider text-slate-500 border-b border-slate-800/80">
+                  <th class="py-2.5 px-2">Waktu / Tanggal</th>
+                  <th class="py-2.5 px-2">Deskripsi & Merchant</th>
+                  <th class="py-2.5 px-2">Kategori</th>
+                  <th class="py-2.5 px-2">Metode Akun</th>
+                  <th class="py-2.5 px-2">Status</th>
+                  <th class="py-2.5 px-2 text-right">Nominal (IDR)</th>
+                  <th class="py-2.5 px-2 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tx-tbody" class="divide-y divide-slate-800/60 font-sans">
+                
+                <!-- Row 1: AWS -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="EXPENSE" data-desc="AWS Cloud Infrastructure Europe Dublin Server">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    19 Sep 14:20
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-slate-200">AWS Cloud Infrastructure</div>
+                    <div class="text-[10px] text-slate-500">EC2 & RDS Instance Auto-Billing</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                      Cloud & SaaS
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    Mandiri Debit
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-rose-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">-Rp 1.250.000</span>
+                    <span class="masked-placeholder text-rose-400">-Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8921', 'AWS Cloud Infrastructure', 'Rp 1.250.000', 'Pengeluaran', '19 Sep 2026, 14:20 WIB', 'Bank Mandiri (Livin)', 'Cloud, AI & Software', 'Recurring cloud billing untuk VPS & database instance.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition" title="Lihat detail">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 2: Super Indo -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="EXPENSE" data-desc="Super Indo BSD Tangerang Groceries">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    19 Sep 11:15
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-slate-200">Super Indo BSD Intermoda</div>
+                    <div class="text-[10px] text-slate-500">Belanja Kebutuhan Dapur & Buah</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 border border-cyan-500/20 text-cyan-400">
+                      Groceries
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    BCA QRIS
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-rose-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">-Rp 420.500</span>
+                    <span class="masked-placeholder text-rose-400">-Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8920', 'Super Indo BSD Intermoda', 'Rp 420.500', 'Pengeluaran', '19 Sep 2026, 11:15 WIB', 'BCA Prioritas (QRIS)', 'Bahan Makanan & Groceries', 'Struk belanja mingguan: beras, sayuran organik, buah, susu.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 3: Kopi Kenangan -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="EXPENSE" data-desc="Kopi Kenangan Alam Sutera F&B Dinner">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    18 Sep 19:40
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-slate-200">Kopi Kenangan & Toast</div>
+                    <div class="text-[10px] text-slate-500">Mall Alam Sutera Ground Fl</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                      Lifestyle & F&B
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    GoPay
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-rose-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">-Rp 78.000</span>
+                    <span class="masked-placeholder text-rose-400">-Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8919', 'Kopi Kenangan & Toast', 'Rp 78.000', 'Pengeluaran', '18 Sep 2026, 19:40 WIB', 'GoPay Wallet', 'Gaya Hidup & Leisure', 'Kopi Americano & Smoked Beef Toast.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 4: Client Retainer (Income) -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="INCOME" data-desc="Client Retainer Consulting AI Systems Invoice">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    17 Sep 09:00
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-emerald-300">Client Retainer: AI Architecture</div>
+                    <div class="text-[10px] text-slate-400">PT Inovasi Solusi Digital (Tahap 1)</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
+                      Pemasukan Proyek
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    BCA Transfer
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-emerald-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">+Rp 10.000.000</span>
+                    <span class="masked-placeholder text-emerald-400">+Rp ••••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8918', 'Client Retainer: AI Architecture', 'Rp 10.000.000', 'Pemasukan', '17 Sep 2026, 09:00 WIB', 'BCA Prioritas (Payroll)', 'Pemasukan Konsultansi', 'Pembayaran Invoice #INV-2026-09-011 jasa arsitektur inferensi LLM.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 5: MyRepublic Fiber -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="EXPENSE" data-desc="MyRepublic Fiber Optic Internet 300 Mbps Utility">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    16 Sep 08:30
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-slate-200">MyRepublic Fiber Optic 300M</div>
+                    <div class="text-[10px] text-slate-500">Auto-Debit Tagihan Internet Rumah</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+                      Tagihan & Utilitas
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    Mandiri Auto
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-indigo-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span> Recurring
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-rose-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">-Rp 450.000</span>
+                    <span class="masked-placeholder text-rose-400">-Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8917', 'MyRepublic Fiber Optic 300M', 'Rp 450.000', 'Pengeluaran', '16 Sep 2026, 08:30 WIB', 'Bank Mandiri (Livin)', 'Perumahan & Tagihan', 'Tagihan rutin internet fiber optic kantor studio & rumah.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 6: Blue Bird Taxi -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="EXPENSE" data-desc="Blue Bird Taxi Bandara Soekarno Hatta Airport Transport">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    15 Sep 17:10
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-slate-200">Blue Bird Taxi (CGK Airport)</div>
+                    <div class="text-[10px] text-slate-500">Antar-jemput Terminal 3 Soetta</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                      Transportasi
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    GoPay
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-rose-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">-Rp 215.000</span>
+                    <span class="masked-placeholder text-rose-400">-Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8916', 'Blue Bird Taxi (CGK Airport)', 'Rp 215.000', 'Pengeluaran', '15 Sep 2026, 17:10 WIB', 'GoPay Wallet', 'Transportasi & Mobilitas', 'Taksi dari meeting klien di SCBD menuju Bandara.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 7: Dividen Bibit -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="INCOME" data-desc="Dividen Reksadana Pasar Uang Sucorinvest Bibit Yield">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    14 Sep 12:00
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-emerald-300">Dividen RDPU Sucorinvest Sharia</div>
+                    <div class="text-[10px] text-slate-400">Pembagian Imbal Hasil Bulanan RDPU</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-semibold">
+                      Passive Yield
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    Bibit Portofolio
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-emerald-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">+Rp 520.000</span>
+                    <span class="masked-placeholder text-emerald-400">+Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8915', 'Dividen RDPU Sucorinvest Sharia', 'Rp 520.000', 'Pemasukan', '14 Sep 2026, 12:00 WIB', 'Bibit RDPU', 'Passive Income', 'Imbal hasil dividen unit penyertaan pasar uang periode Agustus-September.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 8: Tokopedia Gear -->
+                <tr class="hover:bg-slate-800/30 transition group tx-row" data-type="EXPENSE" data-desc="Tokopedia Official Store Keychron Keyboard Hardware">
+                  <td class="py-3 px-2 font-mono text-slate-400 text-[11px] whitespace-nowrap">
+                    12 Sep 20:05
+                  </td>
+                  <td class="py-3 px-2">
+                    <div class="font-semibold text-slate-200">Tokopedia Official Store</div>
+                    <div class="text-[10px] text-slate-500">Keychron K3 Pro Wireless Keyboard</div>
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 border border-purple-500/20 text-purple-400">
+                      Peralatan Kerja
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-slate-300 font-mono text-[11px]">
+                    BCA VA
+                  </td>
+                  <td class="py-3 px-2">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified
+                    </span>
+                  </td>
+                  <td class="py-3 px-2 text-right font-mono font-semibold text-rose-400 tabular-nums whitespace-nowrap">
+                    <span class="masked-target">-Rp 890.000</span>
+                    <span class="masked-placeholder text-rose-400">-Rp ••••••••</span>
+                  </td>
+                  <td class="py-3 px-2 text-center">
+                    <button onclick="viewTxDetail('TX-8914', 'Tokopedia Official Store', 'Rp 890.000', 'Pengeluaran', '12 Sep 2026, 20:05 WIB', 'BCA Prioritas (VA)', 'Peralatan Kerja & Hardware', 'Upgrade perlengkapan kerja ergonomis untuk studio workstation.')" class="opacity-70 group-hover:opacity-100 p-1 text-slate-400 hover:text-white transition">
+                      <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </button>
+                  </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Table Footer Pagination & Meta -->
+        <div class="mt-4 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-400">
+          <div class="font-mono text-[11px]">
+            Menampilkan <span class="text-slate-200 font-semibold" id="tx-showing-count">8</span> dari <span class="text-slate-200 font-semibold">48</span> transaksi (Sep 2026)
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button class="px-2 py-1 rounded bg-[#080b12] hairline-border text-slate-500 cursor-not-allowed text-[11px] font-mono" disabled>Prev</button>
+            <span class="px-2 py-1 text-xs font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded">Hal 1 / 6</span>
+            <button onclick="showToast('Paginasi lengkap akan aktif di Tahap 2')" class="px-2 py-1 rounded bg-[#080b12] hairline-border hover:bg-slate-800 text-slate-300 text-[11px] font-mono transition">Next</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER -->
+  <!-- ========================================================================= -->
+  <footer class="mt-8 hairline-border-t bg-[#080b12] py-4 px-4 lg:px-8 text-xs text-slate-500">
+    <div class="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <div class="flex items-center gap-2">
+        <span class="font-mono text-[11px] text-slate-400">Personal Finance Hub</span>
+        <span>•</span>
+        <span>Two-Stage Review Protocol: Tahap 1 (Konseptualisasi & Desain Mockup)</span>
+      </div>
+      <div class="flex items-center gap-4 text-slate-400 text-[11px]">
+        <span>Designed by <strong class="text-slate-200">ui-designer</strong> (Principal UI/UX)</span>
+        <span>•</span>
+        <span>Client / Owner: <strong class="text-slate-200">Rifqi Setiawan</strong></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- MODALS & DRAWERS (INTERACTIVE MOCKUPS) -->
+  <!-- ========================================================================= -->
+
+  <!-- 1. Modal Catat Transaksi Cepat -->
+  <div id="add-tx-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#0f1422] hairline-border rounded-xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+      
+      <!-- Modal Header -->
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between bg-[#0b0f19]">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xs">
+            +
+          </div>
+          <h3 class="font-bold text-slate-100 text-sm">Catat Transaksi Cepat</h3>
+        </div>
+        <button onclick="closeModal('add-tx-modal')" class="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body Form -->
+      <form onsubmit="handleQuickSubmit(event)" class="p-5 space-y-4 text-xs">
+        
+        <!-- Transaction Type Switch -->
+        <div>
+          <label class="block text-slate-400 font-medium mb-1.5">Tipe Transaksi</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-[#080b12] hairline-border cursor-pointer has-[:checked]:border-rose-500 has-[:checked]:bg-rose-500/10 text-slate-300 font-medium">
+              <input type="radio" name="modal_tx_type" value="EXPENSE" checked class="hidden">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span> Pengeluaran
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-[#080b12] hairline-border cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-500/10 text-slate-300 font-medium">
+              <input type="radio" name="modal_tx_type" value="INCOME" class="hidden">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Pemasukan
+            </label>
+            <label class="flex items-center justify-center gap-1.5 p-2 rounded-lg bg-[#080b12] hairline-border cursor-pointer has-[:checked]:border-cyan-500 has-[:checked]:bg-cyan-500/10 text-slate-300 font-medium">
+              <input type="radio" name="modal_tx_type" value="TRANSFER" class="hidden">
+              <span class="w-2 h-2 rounded-full bg-cyan-500"></span> Mutasi Akun
+            </label>
+          </div>
+        </div>
+
+        <!-- Nominal IDR Input -->
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Nominal (IDR)</label>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 font-mono text-slate-400 text-sm font-semibold">Rp</span>
+            <input type="text" id="modal-amount-input" required placeholder="0" class="w-full bg-[#080b12] hairline-border rounded-lg pl-10 pr-3 py-2 text-base font-mono font-bold text-slate-100 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <!-- Description & Merchant -->
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Deskripsi / Merchant</label>
+          <input type="text" required placeholder="Contoh: Kopi Kenangan, Cloud VPS, Belanja Mingguan" class="w-full bg-[#080b12] hairline-border rounded-lg px-3 py-2 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <!-- Account & Category 2-col -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Sumber Akun</label>
+            <select class="w-full bg-[#080b12] hairline-border rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option>BCA Prioritas (Tahapan)</option>
+              <option>Bank Mandiri (Livin)</option>
+              <option>GoPay Wallet</option>
+              <option>DANA Digital</option>
+              <option>Kas Fisik (Cash)</option>
+              <option>Bibit (RDPU)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-slate-400 font-medium mb-1">Kategori</label>
+            <select class="w-full bg-[#080b12] hairline-border rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option>Bahan Makanan & Groceries</option>
+              <option>Perumahan & Tagihan Utilitas</option>
+              <option>Transportasi & Mobilitas</option>
+              <option>Cloud, Server & Software</option>
+              <option>Gaya Hidup & Leisure</option>
+              <option>Kesehatan & Edukasi</option>
+              <option>Pemasukan Gaji / Retainer</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tanggal & Catatan -->
+        <div>
+          <label class="block text-slate-400 font-medium mb-1">Tanggal & Waktu</label>
+          <input type="text" value="19 September 2026, 14:30 WIB" class="w-full bg-[#080b12] hairline-border rounded-lg px-3 py-2 text-slate-300 font-mono">
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeModal('add-tx-modal')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Batal
+          </button>
+          <button type="submit" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition">
+            Simpan Transaksi
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. Drawer Detail Transaksi -->
+  <div id="tx-detail-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs hidden justify-end">
+    <div class="bg-[#0f1422] hairline-border-l w-full max-w-md h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+      
+      <!-- Drawer Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-[#0b0f19]">
+        <div>
+          <span id="drawer-ref" class="text-[10px] font-mono uppercase text-emerald-400 font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">TX-8921</span>
+          <h3 class="font-bold text-slate-100 text-sm mt-1">Detail Audit Mutasi Transaksi</h3>
+        </div>
+        <button onclick="closeDrawer('tx-detail-drawer')" class="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Drawer Content -->
+      <div class="p-5 space-y-4 flex-1 overflow-y-auto text-xs">
+        
+        <!-- Big Highlight Amount -->
+        <div class="p-4 rounded-xl bg-[#080b12] hairline-border text-center">
+          <span class="text-[10px] uppercase tracking-wider text-slate-500 font-semibold" id="drawer-type-label">Pengeluaran Terkonfirmasi</span>
+          <div id="drawer-amount" class="text-2xl font-bold font-mono text-rose-400 mt-1 tabular-nums">
+            -Rp 1.250.000
+          </div>
+          <div id="drawer-merchant" class="text-sm font-semibold text-slate-200 mt-1">
+            AWS Cloud Infrastructure
+          </div>
+        </div>
+
+        <!-- Meta Specification Table -->
+        <div class="space-y-2.5">
+          <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+            <span class="text-slate-400">Waktu Transaksi</span>
+            <span id="drawer-date" class="font-mono text-slate-200">19 Sep 2026, 14:20 WIB</span>
+          </div>
+          <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+            <span class="text-slate-400">Sumber Akun</span>
+            <span id="drawer-account" class="font-mono text-slate-200">Mandiri Debit</span>
+          </div>
+          <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+            <span class="text-slate-400">Kategori Anggaran</span>
+            <span id="drawer-cat" class="text-amber-400 font-mono">Cloud & SaaS</span>
+          </div>
+          <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+            <span class="text-slate-400">Status Rekonsiliasi</span>
+            <span class="text-emerald-400 font-mono flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> 100% Match Bank Feed
+            </span>
+          </div>
+        </div>
+
+        <!-- Notes / Memo -->
+        <div class="p-3 rounded-lg bg-[#080b12] hairline-border">
+          <span class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">Catatan Tambahan & Bukti</span>
+          <p id="drawer-notes" class="text-slate-300 mt-1 text-xs leading-relaxed">
+            Recurring cloud billing untuk VPS & database instance. Terhubung dengan kartu debit Mandiri.
+          </p>
+        </div>
+
+        <!-- Raw Bank Feed Payload Log (Auditability) -->
+        <div class="p-3 rounded-lg bg-[#080b12] hairline-border">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono text-slate-500 uppercase">Audit Trace Hash</span>
+            <span class="text-[9px] font-mono text-emerald-400">SHA256: 8f7e...92a1</span>
+          </div>
+          <pre class="mt-2 font-mono text-[10px] text-slate-400 bg-slate-950 p-2 rounded overflow-x-auto leading-tight">
+{
+  "trace_id": "MDR-20260919-8921",
+  "gateway": "LIVIN_API_V2",
+  "clearing_status": "SETTLED",
+  "currency": "IDR",
+  "fee_admin": 0
+}</pre>
+        </div>
+
+      </div>
+
+      <!-- Drawer Footer Actions -->
+      <div class="p-4 border-t border-slate-800 bg-[#0b0f19] flex items-center gap-2">
+        <button onclick="showToast('Ekspor bukti transaksi ke PDF siap')" class="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition text-center">
+          Unduh Struk
+        </button>
+        <button onclick="closeDrawer('tx-detail-drawer')" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition">
+          Tutup
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 3. TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT: LOGIKA INTERAKTIF (VANILLA JS, ZERO RUNTIME DEPENDENCIES) -->
+  <!-- ========================================================================= -->
+  <script>
+    // State management
+    let isPrivacyHidden = false;
+    let currentFilterType = 'ALL';
+
+    // 1. Privacy Masking Toggle
+    function togglePrivacyMode() {
+      isPrivacyHidden = !isPrivacyHidden;
+      const body = document.body;
+      const eyeOpen = document.getElementById('eye-icon-open');
+      const eyeClosed = document.getElementById('eye-icon-closed');
+      const label = document.getElementById('privacy-btn-label');
+
+      if (isPrivacyHidden) {
+        body.classList.add('balance-hidden');
+        eyeOpen.classList.add('hidden');
+        eyeClosed.classList.remove('hidden');
+        if (label) label.innerText = 'Buka Saldo';
+        showToast('Mode Privasi Aktif: Semua saldo disamarkan (••••)');
+      } else {
+        body.classList.remove('balance-hidden');
+        eyeOpen.classList.remove('hidden');
+        eyeClosed.classList.add('hidden');
+        if (label) label.innerText = 'Mask Saldo';
+        showToast('Mode Privasi Nonaktif: Angka nominal ditampilkan');
+      }
+    }
+
+    // 2. Chart Tooltip Interactions
+    function showChartTooltip(e, month, inc, exp, net, rate) {
+      const tooltip = document.getElementById('chart-tooltip');
+      document.getElementById('tt-month').innerText = month;
+      document.getElementById('tt-inc').innerText = inc;
+      document.getElementById('tt-exp').innerText = exp;
+      document.getElementById('tt-net').innerText = net;
+      document.getElementById('tt-rate').innerText = rate;
+
+      // Position near mouse or relative to container
+      tooltip.style.left = '20px';
+      tooltip.style.top = '10px';
+      tooltip.classList.remove('hidden');
+    }
+
+    function hideChartTooltip() {
+      const tooltip = document.getElementById('chart-tooltip');
+      tooltip.classList.add('hidden');
+    }
+
+    // 3. Category Donut Interactive Highlight
+    function highlightCategory(name, amount, percent) {
+      const labelEl = document.getElementById('selected-cat-name');
+      const amountEl = document.getElementById('selected-cat-amount');
+      const centerLabel = document.getElementById('donut-center-label');
+      const centerVal = document.getElementById('donut-center-value');
+      const centerSub = document.getElementById('donut-center-sub');
+
+      if (labelEl) labelEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400"></span> ${name} (${percent})`;
+      if (amountEl) amountEl.innerText = `${amount} terpantau`;
+      if (centerLabel) centerLabel.innerText = name.split(' ')[0];
+      if (centerVal) centerVal.innerText = amount;
+      if (centerSub) centerSub.innerText = `${percent} dari belanja`;
+
+      showToast(`Kategori dipilih: ${name} (${amount})`);
+    }
+
+    // 4. Transaction Filter by Type (Tabs)
+    function filterType(type) {
+      currentFilterType = type;
+      
+      // Update tab styles
+      const tabAll = document.getElementById('tab-all');
+      const tabExp = document.getElementById('tab-exp');
+      const tabInc = document.getElementById('tab-inc');
+
+      const defaultClass = "px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-200 transition";
+      const activeClass = "px-2.5 py-1 rounded-md font-medium bg-slate-800 text-white shadow-sm";
+
+      tabAll.className = (type === 'ALL') ? activeClass : defaultClass;
+      tabExp.className = (type === 'EXPENSE') ? activeClass : defaultClass;
+      tabInc.className = (type === 'INCOME') ? activeClass : defaultClass;
+
+      filterTransactions();
+    }
+
+    // 5. Transaction Search & Tab Filtering
+    function filterTransactions() {
+      const query = (document.getElementById('tx-search-input').value || '').toLowerCase();
+      const rows = document.querySelectorAll('.tx-row');
+      let visibleCount = 0;
+
+      rows.forEach(row => {
+        const rowType = row.getAttribute('data-type');
+        const desc = (row.getAttribute('data-desc') || '').toLowerCase();
+        const text = row.innerText.toLowerCase();
+
+        const matchType = (currentFilterType === 'ALL') || (rowType === currentFilterType);
+        const matchQuery = !query || desc.includes(query) || text.includes(query);
+
+        if (matchType && matchQuery) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      const countEl = document.getElementById('tx-showing-count');
+      if (countEl) countEl.innerText = visibleCount;
+    }
+
+    // 6. Drawer Detail View
+    function viewTxDetail(ref, merchant, amount, type, date, account, cat, notes) {
+      document.getElementById('drawer-ref').innerText = ref;
+      document.getElementById('drawer-merchant').innerText = merchant;
+      document.getElementById('drawer-amount').innerText = (type === 'Pemasukan' ? '+' : '-') + amount;
+      
+      const amountEl = document.getElementById('drawer-amount');
+      if (type === 'Pemasukan') {
+        amountEl.className = 'text-2xl font-bold font-mono text-emerald-400 mt-1 tabular-nums';
+        document.getElementById('drawer-type-label').innerText = 'Pemasukan Terkonfirmasi';
+      } else {
+        amountEl.className = 'text-2xl font-bold font-mono text-rose-400 mt-1 tabular-nums';
+        document.getElementById('drawer-type-label').innerText = 'Pengeluaran Terkonfirmasi';
+      }
+
+      document.getElementById('drawer-date').innerText = date;
+      document.getElementById('drawer-account').innerText = account;
+      document.getElementById('drawer-cat').innerText = cat;
+      document.getElementById('drawer-notes').innerText = notes;
+
+      const drawer = document.getElementById('tx-detail-drawer');
+      drawer.classList.remove('hidden');
+      drawer.classList.add('flex');
+    }
+
+    function closeDrawer(id) {
+      const el = document.getElementById(id);
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+
+    // 7. Modal Handlers
+    function openModal(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+
+    function handleQuickSubmit(e) {
+      e.preventDefault();
+      closeModal('add-tx-modal');
+      showToast('Transaksi baru berhasil dicatat & masuk antrean audit!');
+    }
+
+    // 8. Miscellaneous Actions
+    function selectPeriod(p) {
+      showToast(`Periode diubah ke: ${p}`);
+    }
+
+    function exportData() {
+      showToast('Menyiapkan file ekspor CSV keuangan September 2026...');
+    }
+
+    function refreshSync() {
+      const icon = document.getElementById('sync-icon');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        showToast('Semua feed rekening (BCA, Mandiri, GoPay, Bibit) berhasil disinkronkan.');
+      }, 750);
+    }
+
+    // 9. Toast Notification Engine
+    function showToast(message) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'pointer-events-auto bg-[#101726] border border-slate-700 text-slate-100 text-xs px-3.5 py-2.5 rounded-lg shadow-2xl flex items-center gap-2.5 transform transition-all duration-200 translate-y-2 opacity-0 font-sans';
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      // Animate in
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      // Auto dismiss
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
