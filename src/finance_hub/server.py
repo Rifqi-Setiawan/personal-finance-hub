@@ -15,8 +15,10 @@ from finance_hub.models import (
     compute_raw_hash,
 )
 from finance_hub.parser.engine import default_engine, ParserEngine
+from finance_hub.parser.base import is_promo_or_non_financial
 from finance_hub.storage import get_storage, StorageManager
 from finance_hub.integrations.sheets_sync import GoogleSheetsSync
+from finance_hub.integrations.telegram_notify import TelegramNotifier
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +46,9 @@ class DuplicateResponse(BaseModel):
 def create_app(
     storage_manager: Optional[StorageManager] = None,
     sheets_sync: Optional[GoogleSheetsSync] = None,
+    telegram_notifier: Optional[TelegramNotifier] = None,
 ) -> FastAPI:
-    """Application factory allowing custom storage and sheets sync injection (e.g. for testing)."""
+    """Application factory allowing custom storage, sheets sync, and telegram notifier injection."""
     class StorageProxy:
         def __getattr__(self, name):
             nonlocal storage_manager
@@ -55,6 +58,7 @@ def create_app(
 
     storage: Any = storage_manager if storage_manager is not None else StorageProxy()
     sheets = sheets_sync if sheets_sync is not None else GoogleSheetsSync()
+    notifier = telegram_notifier if telegram_notifier is not None else TelegramNotifier()
     engine = default_engine
 
     app = FastAPI(
@@ -100,14 +104,14 @@ def create_app(
         # 2. Parse & Classify
         parsed = engine.parse(payload, raw_hash=raw_hash)
 
-        # Skip non-financial notifications (promo, advertisements, news with amount <= 0)
-        if parsed.amount <= 0.0:
+        # Skip non-financial notifications (promo, advertisements, news with amount <= 0, or failed transactions)
+        if is_promo_or_non_financial(payload.text) or parsed.amount <= 0.0:
             return JSONResponse(
                 status_code=status.HTTP_200_OK,
                 content={
                     "status": "non_financial_ignored",
                     "raw_hash": raw_hash,
-                    "message": "Notification contains no financial transaction amount (promo or informational)."
+                    "message": "Notification is a promotional message, failed transaction, or informational text."
                 }
             )
 
@@ -133,7 +137,21 @@ def create_app(
             except Exception as exc:
                 logger.error(f"Background Google Sheets sync failed for {tx.raw_hash}: {exc}")
 
+        # 5. Schedule Telegram notification alert in background task
+        def _bg_notify_telegram(tx: ParsedTransaction):
+            try:
+                if notifier.is_configured():
+                    cashflow = None
+                    try:
+                        cashflow = storage.get_weekly_cashflow()
+                    except Exception as cf_err:
+                        logger.debug(f"Could not fetch cashflow for alert: {cf_err}")
+                    notifier.send_transaction_alert(tx, cashflow=cashflow)
+            except Exception as exc:
+                logger.error(f"Background Telegram notification failed for {tx.raw_hash}: {exc}")
+
         background_tasks.add_task(_bg_sync_sheets, parsed)
+        background_tasks.add_task(_bg_notify_telegram, parsed)
 
         return parsed
 
@@ -246,6 +264,16 @@ def create_app(
     def get_account_balances_query():
         """Query current liquid balances across all accounts and wallets."""
         return storage.get_account_balances()
+
+    @app.get("/api/telegram-status")
+    def get_telegram_status():
+        """Retrieve Telegram notification configuration and readiness status."""
+        return {
+            "enabled": notifier.enabled,
+            "configured": notifier.is_configured(),
+            "chat_id_configured": bool(notifier.chat_id),
+            "bot_token_configured": bool(notifier.bot_token),
+        }
 
     return app
 

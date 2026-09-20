@@ -1,16 +1,21 @@
 """Integration tests for FastAPI endpoints."""
 
+from unittest.mock import MagicMock
 import pytest
 from fastapi.testclient import TestClient
 
 from finance_hub.server import create_app
 from finance_hub.storage import StorageManager
+from finance_hub.integrations.sheets_sync import GoogleSheetsSync
 
 
 @pytest.fixture
 def test_app():
     storage = StorageManager(db_path=":memory:")
-    app = create_app(storage_manager=storage)
+    mock_sheets = MagicMock(spec=GoogleSheetsSync)
+    mock_sheets.is_configured.return_value = False
+    mock_sheets.append_transaction.return_value = True
+    app = create_app(storage_manager=storage, sheets_sync=mock_sheets)
     with TestClient(app) as client:
         yield client
     storage.close()

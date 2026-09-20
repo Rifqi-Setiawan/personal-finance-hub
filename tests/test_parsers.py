@@ -23,6 +23,14 @@ class TestAmountAndDateHelpers:
         assert parse_amount_idr("IDR 100,000.00") == 100000.0
         assert parse_amount_idr("50000") == 50000.0
 
+    def test_promo_and_failed_notifications_ignored(self):
+        # Promo messages with numbers should return 0.0
+        assert parse_amount_idr("Hubungkan dan transaksi GoPay di Alfagift, dapatkan CASHBACK s.d. 50rb. Yuk, coba sekarang!") == 0.0
+        assert parse_amount_idr("Bayar semua tagihan diskon s.d. 15RB. Bayar sekarang👉🏻") == 0.0
+        assert parse_amount_idr("Dapat diskon 9RB buat Rifqi Setiawan, langsung bayar Tagihan PLN disini👉🏻") == 0.0
+        # Failed notifications with numbers should return 0.0
+        assert parse_amount_idr("Gak bisa bayar Rp59.900 ke Spotify pake GoPay karena saldonya kurang. Klik buat top up.") == 0.0
+
     def test_parse_datetime_id(self):
         res = parse_datetime_id("01/09 07:14", default_ts="2026-09-01T00:00:00")
         assert "2026-09-01T07:14:00" in res

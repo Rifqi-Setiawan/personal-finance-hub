@@ -32,10 +32,17 @@ def storage():
     sm.close()
 
 
+from unittest.mock import MagicMock
+from finance_hub.integrations.sheets_sync import GoogleSheetsSync
+
+
 @pytest.fixture
 def app_client(storage):
     """Test client wired to the isolated in-memory storage."""
-    app = create_app(storage_manager=storage)
+    mock_sheets = MagicMock(spec=GoogleSheetsSync)
+    mock_sheets.is_configured.return_value = False
+    mock_sheets.append_transaction.return_value = True
+    app = create_app(storage_manager=storage, sheets_sync=mock_sheets)
     with TestClient(app) as client:
         yield client
 

@@ -8,12 +8,56 @@ from datetime import datetime, timezone
 from finance_hub.models import Institution, TransactionType, ParsedTransaction, NotificationPayload
 
 
+PROMO_AND_FAILED_PATTERNS = [
+    # 1. Failed / Insufficient balance transactions
+    r'g(?:a|ak|k)\s+bisa\s+bayar',
+    r'tidak\s+(?:dapat|bisa)\s+(?:diproses|dibayar)',
+    r'saldonya?\s+kurang',
+    r'saldo\s+tidak\s+cukup',
+    r'\bgagal\b',
+    r'\bdibatalkan\b',
+    r'\bkadaluarsa\b',
+    r'\bexpired\b',
+    # 2. Marketing / Cashback / Discount promos
+    r'dapatkan\s+cashback',
+    r'cashback\s+s\.?d\.?',
+    r'diskon\s+s\.?d\.?',
+    r'dapat\s+diskon',
+    r'bayar\s+semua\s+tagihan\s+diskon',
+    r'yuk,?\s+coba\s+sekarang',
+    r'klik\s+buat\s+top\s+up',
+    r'gratis\s+ongkir',
+    r'\bkupon\s+diskon\b',
+    r'\bvoucher\s+diskon\b',
+    r'\bspaylater\b',
+    r'\bgopaylater\b',
+    r'ajukan\s+pinjaman',
+    # 3. Security / OTP
+    r'kode\s+otp',
+    r'jangan\s+berikan\s+kode',
+    r'login\s+baru\s+terdeteksi',
+]
+
+
+def is_promo_or_non_financial(text: str) -> bool:
+    """Return True if text is a marketing promo, notification ad, or failed transaction."""
+    txt_lower = text.lower()
+    for pat in PROMO_AND_FAILED_PATTERNS:
+        if re.search(pat, txt_lower):
+            return True
+    return False
+
+
 def parse_amount_idr(text: str) -> float:
     """
     Extract and normalize an IDR amount from text.
     Handles Indonesian number formats (e.g., Rp 25.000.000,00, Rp 45.000, Rp. 100.000, etc.)
     and conversational multipliers like 25rb, 25k, 25 ribu, 2.5jt, 2,5 juta.
+    Returns 0.0 if text is identified as a promotional or failed notification.
     """
+    if is_promo_or_non_financial(text):
+        return 0.0
+
     # 0. Check conversational multipliers: e.g. "25rb", "25 k", "25ribu", "2.5jt", "2,5 juta"
     mult_match = re.search(r'(?:(?:Rp\.?|IDR)\s*)?([0-9]+(?:[\.,][0-9]+)?)\s*(rb|k|ribu|jt|juta)\b', text, re.IGNORECASE)
     if mult_match:
