@@ -21,8 +21,12 @@ PROMO_AND_FAILED_PATTERNS = [
     # 2. Marketing / Cashback / Discount promos
     r'dapatkan\s+cashback',
     r'cashback\s+s\.?d\.?',
+    r'\bcashback\b',
     r'diskon\s+s\.?d\.?',
     r'dapat\s+diskon',
+    r'\bdiskon\b',
+    r'\bpromo\b',
+    r'\bvoucher\b',
     r'bayar\s+semua\s+tagihan\s+diskon',
     r'yuk,?\s+coba\s+sekarang',
     r'klik\s+buat\s+top\s+up',
@@ -32,6 +36,10 @@ PROMO_AND_FAILED_PATTERNS = [
     r'\bspaylater\b',
     r'\bgopaylater\b',
     r'ajukan\s+pinjaman',
+    r'klaim\s+hadiah',
+    r'amankan\s+voucher',
+    r'penawaran\s+spesial',
+    r'khusus\s+buat\s+kamu',
     # 3. Security / OTP
     r'kode\s+otp',
     r'jangan\s+berikan\s+kode',
