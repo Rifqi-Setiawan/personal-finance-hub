@@ -171,11 +171,12 @@ def parse_datetime_id(text: str, default_ts: Optional[str] = None) -> str:
         except ValueError:
             pass
 
-    # Fallback to default_ts if valid, or current UTC timestamp
+    # Fallback to default_ts if valid, or current local (WIB) timestamp
     if default_ts and len(default_ts) >= 10:
         return default_ts
 
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    # Use current local system time (WIB / server local timezone) without microsecond noise
+    return datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S")
 
 
 class BaseInstitutionParser(ABC):

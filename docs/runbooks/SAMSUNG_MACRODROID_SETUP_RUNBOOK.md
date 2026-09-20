@@ -50,13 +50,12 @@ Di menu utama MacroDroid, klik tombol **"Add Macro"** (Tambah Makro), lalu atur 
      ```
    - **Content-Type**: Pilih `application/json`.
    - **Request Body (Content Body)**:
-     Ketik template JSON persis seperti berikut:
+     Ketik template JSON persis seperti berikut (tidak perlu menyertakan timestamp, server akan otomatis mencatat waktu saat request diterima):
      ```json
      {
        "package_name": "[package_name]",
        "title": "[not_title]",
        "text": "[not_body]",
-       "timestamp": "[year]-[month_digit]-[day_digit]T[hour]:[minute]:[second]",
        "source_device": "Samsung A54"
      }
      ```

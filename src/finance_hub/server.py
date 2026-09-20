@@ -104,6 +104,11 @@ def create_app(
         # 2. Parse & Classify
         parsed = engine.parse(payload, raw_hash=raw_hash)
 
+        # If payload had no timestamp, ensure parsed timestamp reflects the current hit time (WIB)
+        if not (payload.timestamp and len(payload.timestamp) >= 10):
+            from datetime import datetime
+            parsed.timestamp = datetime.now().astimezone().strftime("%Y-%m-%dT%H:%M:%S")
+
         # Skip non-financial notifications (promo, advertisements, news with amount <= 0, or failed transactions)
         if is_promo_or_non_financial(payload.text) or parsed.amount <= 0.0:
             return JSONResponse(
