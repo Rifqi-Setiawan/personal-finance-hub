@@ -83,7 +83,9 @@ class ParserEngine:
 
         # Detect specific institution keyword in manual text
         inst_detect = [
-            ("mandiri", Institution.MANDIRI, "Mandiri"),
+            ("e-money", Institution.MANDIRI, "Mandiri Tabungan"),
+            ("emoney", Institution.MANDIRI, "Mandiri Tabungan"),
+            ("mandiri", Institution.MANDIRI, "Mandiri Tabungan"),
             ("gopay", Institution.GOPAY, "GoPay"),
             ("dana", Institution.DANA, "DANA"),
             ("shopee", Institution.SHOPEEPAY, "ShopeePay"),
@@ -117,15 +119,16 @@ class ParserEngine:
 
         # Extract merchant heuristics
         merchant = "Cash Expense"
-        m_merch = re.search(r'(?:di|pembelian|ke)\s+([^0-9]+?)(?:\s+sebesar|\s+Rp|\.|$)', text, re.IGNORECASE)
+        m_merch = re.search(r'(?:di|pembelian|ke|beli|bayar|top\s*up|tokap)\s+([^0-9]+?)(?:\s+sebesar|\s+Rp|\.|$)', text, re.IGNORECASE)
         if m_merch:
             merchant = m_merch.group(1).strip()
+            merchant = re.sub(r'^(di|ke|dari|top\s*up|tokap|bayar|beli)\s+', '', merchant, flags=re.IGNORECASE).strip()
         elif "apotek" in txt_lower or "apotik" in txt_lower:
             m_apt = re.search(r'(apotek\s+[^0-9]+?)(?:\s+resep|\s+Rp|\d)', text, re.IGNORECASE)
             if m_apt:
                 merchant = m_apt.group(1).strip()
 
-        merchant = re.sub(r'^(di|ke|dari)\s+', '', merchant, flags=re.IGNORECASE).strip()
+        merchant = re.sub(r'^(di|ke|dari|top\s*up|tokap|bayar|beli)\s+', '', merchant, flags=re.IGNORECASE).strip()
         merchant = merchant.rstrip(' .,:;-')
 
         # Clean trailing status words (e.g. berhasil, sukses, settled, selesai, etc.)
@@ -136,6 +139,12 @@ class ParserEngine:
 
         if not merchant:
             merchant = "Cash Expense"
+        else:
+            merchant = merchant.title()
+            if merchant.lower() == "gopay":
+                merchant = "GoPay"
+            elif merchant.lower() in ("shopee", "shopeepay"):
+                merchant = "ShopeePay"
 
         category, subcategory, bucket = classify_transaction(merchant, text, tx_type)
 

@@ -74,7 +74,8 @@ RULES: List[CategoryRule] = [
         keywords=[
             "pln", "listrik", "token pln", "pdam", "air", "indihome", "biznet",
             "first media", "myrepublic", "telkomsel", "xl", "indosat", "tri",
-            "smartfren", "wifi", "pulsa", "paket data", "tagihan", "pascabayar", "ipl", "pbb"
+            "smartfren", "wifi", "pulsa", "paket data", "tagihan", "pascabayar", "ipl", "pbb",
+            "laundry", "cuci baju", "cuci"
         ],
         priority=20,
     ),
@@ -85,7 +86,8 @@ RULES: List[CategoryRule] = [
         keywords=[
             "spbu", "pertamina", "shell", "bp akr", "pertamax", "pertalite", "solar", "bensin",
             "krl", "mrt", "lrt", "tol", "jasa marga", "gocar", "goride", "grabride",
-            "grabcar", "transjakarta", "busway", "kereta", "kai", "parkir"
+            "grabcar", "transjakarta", "busway", "kereta", "kai", "parkir",
+            "transportasi", "transport", "e-money", "emoney", "flazz", "jaklingko"
         ],
         priority=20,
     ),
@@ -130,9 +132,17 @@ RULES: List[CategoryRule] = [
             "gofood", "grabfood", "shopeefood", "kopi", "coffee", "cafe", "kafe",
             "restoran", "resto", "mcdonald", "mcd", "kfc", "burger king", "sushi tei",
             "bakmi gm", "bakmi", "solaria", "d'cost", "padang", "sederhana", "warung",
-            "boba", "chatime", "mixue", "hokben", "marugame", "ramen", "snack & minuman"
+            "boba", "chatime", "mixue", "hokben", "marugame", "ramen", "snack & minuman",
+            "gorengan", "sarapan", "makan malam", "makan siang", "makan ayam", "ayam"
         ],
         priority=15,
+    ),
+    CategoryRule(
+        category="E-Wallet & Digital Money",
+        subcategory="E-Wallet Top-up",
+        bucket=CategoryBucket.WANTS,
+        keywords=["top up", "topup", "tokap", "isi saldo"],
+        priority=18,
     ),
     CategoryRule(
         category="Entertainment & Subscriptions",
@@ -210,7 +220,7 @@ RULES: List[CategoryRule] = [
         category="Internal Account Transfer",
         subcategory="E-Wallet Top-up & Inter-Bank",
         bucket=CategoryBucket.TRANSFER,
-        keywords=["top up", "topup", "transfer ke", "kirim uang", "saldo gopay", "saldo dana", "saldo ovo", "saldo shopeepay", "rebalance"],
+        keywords=["top up", "topup", "tokap", "transfer ke", "kirim uang", "saldo gopay", "saldo dana", "saldo ovo", "saldo shopeepay", "rebalance"],
         priority=5,
     ),
 ]
