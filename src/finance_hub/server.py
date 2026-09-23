@@ -104,6 +104,17 @@ def create_app(
         # 2. Parse & Classify
         parsed = engine.parse(payload, raw_hash=raw_hash)
 
+        # 2b. Laya System 1 Anomaly & Quality Audit
+        try:
+            from finance_hub.laya_guard import audit_transaction_anomaly
+            is_anomaly, score, reason = audit_transaction_anomaly(
+                amount=parsed.amount, raw_text=payload.text, category=parsed.category
+            )
+            if is_anomaly:
+                logger.warning(f"Laya Anomaly Detected [{score:.2f}]: {reason} for hash {raw_hash}")
+        except Exception as guard_err:
+            logger.debug(f"Laya guard check skipped: {guard_err}")
+
         # If payload had no timestamp, ensure parsed timestamp reflects the current hit time (WIB)
         if not (payload.timestamp and len(payload.timestamp) >= 10):
             from datetime import datetime
