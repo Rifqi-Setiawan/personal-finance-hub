@@ -137,3 +137,18 @@ class TestAPIEndpoints:
         assert summary["total_income"] == 10000000.0
         assert summary["needs_expense"] == 850000.0
         assert summary["total_transactions"] == 2
+
+    def test_gmail_status_endpoint(self, test_app):
+        response = test_app.get("/api/gmail/status")
+        assert response.status_code == 200
+        data = response.json()
+        assert "authenticated" in data
+        assert "has_client_secrets" in data
+        assert "has_token" in data
+        assert "query" in data
+
+    def test_gmail_poll_unauthenticated_fails(self, test_app):
+        response = test_app.post("/api/gmail/poll")
+        assert response.status_code == 401
+        assert "not authenticated" in response.json()["detail"].lower()
+

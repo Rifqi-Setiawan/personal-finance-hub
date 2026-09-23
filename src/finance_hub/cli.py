@@ -255,6 +255,94 @@ def cmd_balances() -> None:
     print("=" * 64)
 
 
+def cmd_auth_gmail(
+    start: bool = False,
+    finish: Optional[str] = None,
+    status_check: bool = False,
+) -> None:
+    """Handle Gmail OAuth2 authorization and status check."""
+    from finance_hub.integrations.gmail_auth import (
+        start_authorization,
+        finish_authorization,
+        get_gmail_credentials,
+        get_client_secrets_path,
+        get_token_path,
+    )
+
+    if start:
+        url, state = start_authorization()
+        print("=" * 64)
+        print(" PERSONAL FINANCE HUB — GMAIL OAUTH2 AUTHORIZATION")
+        print("=" * 64)
+        print("1. Buka URL berikut di browser:")
+        print()
+        print(url)
+        print()
+        print("2. Login dengan akun Gmail kamu dan klik 'Lanjutkan / Allow'.")
+        print("3. Browser akan redirect ke halaman localhost yang mungkin tampak error.")
+        print("4. Copy seluruh URL dari address bar browser (atau kode dari URL), lalu jalankan:")
+        print("   python -m finance_hub.cli auth-gmail --finish \"<URL_ATAU_KODE>\"")
+        print("=" * 64)
+    elif finish:
+        try:
+            creds = finish_authorization(finish)
+            print("=" * 64)
+            print(" ✅ GMAIL OAUTH2 AUTHORIZATION SUCCESSFUL!")
+            print("=" * 64)
+            print(f" Token tersimpan di: {get_token_path()}")
+            print(" Token akan auto-refresh di background.")
+            print("=" * 64)
+        except Exception as exc:
+            print(f"❌ Error completing authorization: {exc}")
+    else:
+        # Status check
+        secrets_file = get_client_secrets_path()
+        token_file = get_token_path()
+        creds = get_gmail_credentials()
+        is_auth = creds is not None and creds.valid
+        print("=" * 64)
+        print(" PERSONAL FINANCE HUB — GMAIL INTEGRATION STATUS")
+        print("=" * 64)
+        print(
+            f" Client Secrets : {'✅ FOUND' if os.path.isfile(secrets_file) else '❌ MISSING'} ({secrets_file})"
+        )
+        print(
+            f" Token File     : {'✅ FOUND' if os.path.isfile(token_file) else '❌ MISSING'} ({token_file})"
+        )
+        print(f" Authenticated  : {'✅ YES' if is_auth else '❌ NO'}")
+        print("=" * 64)
+
+
+def cmd_poll_gmail(
+    max_results: int = 20,
+    no_sheets: bool = False,
+    no_telegram: bool = False,
+) -> None:
+    """Poll Gmail for transaction emails and process them."""
+    from finance_hub.integrations.gmail_poller import GmailPoller
+
+    poller = GmailPoller()
+    if not poller.is_authenticated():
+        print(
+            "❌ Gmail is not authenticated. Jalankan: python -m finance_hub.cli auth-gmail --start"
+        )
+        return
+
+    print("=" * 64)
+    print(" PERSONAL FINANCE HUB — POLLING GMAIL FOR TRANSACTIONS")
+    print("=" * 64)
+    result = poller.poll_recent_transactions(
+        max_results=max_results,
+        sync_sheets=not no_sheets,
+        notify_telegram=not no_telegram,
+    )
+    print(f" Polled Messages : {result.get('polled_count', 0)}")
+    print(f" New Saved Tx    : {result.get('saved_count', 0)}")
+    print(f" Duplicates      : {result.get('duplicate_count', 0)}")
+    print(f" Ignored/Invalid : {result.get('ignored_count', 0)}")
+    print("=" * 64)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="python -m finance_hub.cli",
@@ -315,6 +403,49 @@ def main() -> None:
     # Command: balances
     subparsers.add_parser("balances", help="Show current balances across all accounts")
 
+    # Command: auth-gmail
+    auth_gmail_cmd = subparsers.add_parser(
+        "auth-gmail", help="Authorize or check Gmail API OAuth2 integration"
+    )
+    auth_gmail_cmd.add_argument(
+        "--start",
+        action="store_true",
+        help="Generate authorization URL and begin OAuth flow",
+    )
+    auth_gmail_cmd.add_argument(
+        "--finish",
+        type=str,
+        default=None,
+        help="Finish OAuth flow with callback URL or authorization code",
+    )
+    auth_gmail_cmd.add_argument(
+        "--status",
+        action="store_true",
+        help="Check Gmail authentication status and token file",
+    )
+
+    # Command: poll-gmail
+    poll_gmail_cmd = subparsers.add_parser(
+        "poll-gmail", help="Poll Gmail for new transaction emails"
+    )
+    poll_gmail_cmd.add_argument(
+        "--max-results",
+        "-n",
+        type=int,
+        default=20,
+        help="Maximum email messages to inspect (default: 20)",
+    )
+    poll_gmail_cmd.add_argument(
+        "--no-sheets",
+        action="store_true",
+        help="Skip background Google Sheets sync",
+    )
+    poll_gmail_cmd.add_argument(
+        "--no-telegram",
+        action="store_true",
+        help="Skip background Telegram notification",
+    )
+
     args = parser.parse_args()
 
     if args.command == "parse-text":
@@ -331,6 +462,18 @@ def main() -> None:
         cmd_allowance()
     elif args.command == "balances":
         cmd_balances()
+    elif args.command == "auth-gmail":
+        cmd_auth_gmail(
+            start=args.start,
+            finish=args.finish,
+            status_check=args.status,
+        )
+    elif args.command == "poll-gmail":
+        cmd_poll_gmail(
+            max_results=args.max_results,
+            no_sheets=args.no_sheets,
+            no_telegram=args.no_telegram,
+        )
     else:
         parser.print_help()
 

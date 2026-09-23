@@ -291,6 +291,49 @@ def create_app(
             "bot_token_configured": bool(notifier.bot_token),
         }
 
+    @app.get("/api/gmail/status")
+    def get_gmail_status():
+        """Retrieve Gmail API ingestion authentication and connection status."""
+        from finance_hub.integrations.gmail_auth import (
+            get_token_path,
+            get_client_secrets_path,
+            get_gmail_credentials,
+        )
+        token_path = get_token_path()
+        secrets_path = get_client_secrets_path()
+        has_secrets = os.path.isfile(secrets_path)
+        has_token = os.path.isfile(token_path)
+        creds = get_gmail_credentials()
+        is_authenticated = creds is not None and creds.valid
+        return {
+            "authenticated": is_authenticated,
+            "has_client_secrets": has_secrets,
+            "has_token": has_token,
+            "query": os.environ.get(
+                "GMAIL_SEARCH_QUERY",
+                'from:(bankmandiri OR mandiri) "Notifikasi Transaksi"',
+            ),
+        }
+
+    @app.post("/api/gmail/poll")
+    def trigger_gmail_poll(
+        max_results: int = Query(default=20, ge=1, le=100),
+    ):
+        """Trigger on-demand polling of Gmail for transaction emails."""
+        from finance_hub.integrations.gmail_poller import GmailPoller
+        poller = GmailPoller(
+            storage_manager=storage,
+            sheets_sync=sheets,
+            telegram_notifier=notifier,
+        )
+        if not poller.is_authenticated():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Gmail is not authenticated. Run auth-gmail first.",
+            )
+        result = poller.poll_recent_transactions(max_results=max_results)
+        return result
+
     return app
 
 
