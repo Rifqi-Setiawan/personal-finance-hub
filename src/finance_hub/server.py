@@ -311,7 +311,7 @@ def create_app(
             "has_token": has_token,
             "query": os.environ.get(
                 "GMAIL_SEARCH_QUERY",
-                'from:(bankmandiri OR mandiri) "Notifikasi Transaksi"',
+                'from:(bankmandiri.co.id OR noreply.livin@bankmandiri.co.id OR "Livin\'")',
             ),
         }
 

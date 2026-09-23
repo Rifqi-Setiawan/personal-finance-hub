@@ -226,6 +226,13 @@ RULES: List[CategoryRule] = [
 ]
 
 
+def _kw_matches(kw: str, text: str) -> bool:
+    """Match keyword using whole-word boundary for short words (<=4 chars) to prevent false positives."""
+    if len(kw) <= 4:
+        return bool(re.search(r'\b' + re.escape(kw) + r'\b', text))
+    return kw in text
+
+
 def classify_transaction(
     merchant: str,
     raw_text: str,
@@ -245,7 +252,7 @@ def classify_transaction(
         for rule in RULES:
             if rule.bucket == CategoryBucket.SAVINGS_INVESTMENTS:
                 for kw in rule.keywords:
-                    if kw in search_space:
+                    if _kw_matches(kw, search_space):
                         return rule.category, rule.subcategory, rule.bucket
         return "Internal Account Transfer", "E-Wallet Top-up & Inter-Bank", CategoryBucket.TRANSFER
 
@@ -256,7 +263,7 @@ def classify_transaction(
         income_rules.sort(key=lambda r: r.priority, reverse=True)
         for rule in income_rules:
             for kw in rule.keywords:
-                if kw in search_space:
+                if _kw_matches(kw, search_space):
                     return rule.category, rule.subcategory, rule.bucket
         return "Cashback & Gifts", "Other Income", CategoryBucket.INCOME
 
@@ -267,8 +274,7 @@ def classify_transaction(
 
     for rule in expense_eligible_rules:
         for kw in rule.keywords:
-            # Word boundary or simple substring check
-            if re.search(r'\b' + re.escape(kw) + r'\b', search_space) or kw in search_space:
+            if _kw_matches(kw, search_space):
                 return rule.category, rule.subcategory, rule.bucket
 
     # Fallback for expense:

@@ -148,7 +148,9 @@ class TestAPIEndpoints:
         assert "query" in data
 
     def test_gmail_poll_unauthenticated_fails(self, test_app):
-        response = test_app.post("/api/gmail/poll")
-        assert response.status_code == 401
-        assert "not authenticated" in response.json()["detail"].lower()
+        from unittest.mock import patch
+        with patch("finance_hub.integrations.gmail_poller.get_gmail_credentials", return_value=None):
+            response = test_app.post("/api/gmail/poll")
+            assert response.status_code == 401
+            assert "not authenticated" in response.json()["detail"].lower()
 

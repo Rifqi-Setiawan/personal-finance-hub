@@ -117,9 +117,18 @@ def finish_authorization(
     )
     flow.code_verifier = code_verifier
 
+    # Allow http://localhost callback in oauthlib
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
     raw_input = response_url_or_code.strip()
 
-    if "code=" in raw_input or raw_input.startswith("http://") or raw_input.startswith("https://"):
+    import urllib.parse
+    parsed_url = urllib.parse.urlparse(raw_input)
+    qs = urllib.parse.parse_qs(parsed_url.query)
+    if "code" in qs:
+        code_val = qs["code"][0]
+        flow.fetch_token(code=code_val)
+    elif "code=" in raw_input or raw_input.startswith(("http://", "https://")):
         flow.fetch_token(authorization_response=raw_input)
     else:
         flow.fetch_token(code=raw_input)

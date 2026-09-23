@@ -27,7 +27,7 @@ from finance_hub.parser.mandiri_email import MandiriEmailParser
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_MANDIRI_QUERY = 'from:(bankmandiri OR mandiri) "Notifikasi Transaksi"'
+DEFAULT_MANDIRI_QUERY = 'from:(bankmandiri.co.id OR noreply.livin@bankmandiri.co.id OR "Livin\'")'
 
 
 def decode_gmail_body(payload: Dict[str, Any]) -> str:
