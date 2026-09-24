@@ -319,6 +319,33 @@ def cmd_poll_gmail(
     no_telegram: bool = False,
 ) -> None:
     """Poll Gmail for transaction emails and process them."""
+    print("=" * 64)
+    print(" PERSONAL FINANCE HUB — POLLING GMAIL FOR TRANSACTIONS")
+    print("=" * 64)
+
+    # Fast-path: If local FastAPI server is running on port 8085, delegate to it
+    # to avoid DuckDB embedded file lock conflicts.
+    if not os.environ.get("PYTEST_CURRENT_TEST"):
+        try:
+            url = f"http://127.0.0.1:8085/api/gmail/poll?max_results={max_results}"
+            req = urllib.request.Request(
+                url,
+                data=b"",
+                headers={"User-Agent": "FinanceHubCLI/1.0"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status == 200:
+                    result = json.loads(resp.read().decode("utf-8"))
+                    print(f" Polled Messages : {result.get('polled_count', 0)}")
+                    print(f" New Saved Tx    : {result.get('saved_count', 0)}")
+                    print(f" Duplicates      : {result.get('duplicate_count', 0)}")
+                    print(f" Ignored/Invalid : {result.get('ignored_count', 0)}")
+                    print("=" * 64)
+                    return
+        except Exception:
+            pass
+
     from finance_hub.integrations.gmail_poller import GmailPoller
 
     poller = GmailPoller()
@@ -328,9 +355,6 @@ def cmd_poll_gmail(
         )
         return
 
-    print("=" * 64)
-    print(" PERSONAL FINANCE HUB — POLLING GMAIL FOR TRANSACTIONS")
-    print("=" * 64)
     result = poller.poll_recent_transactions(
         max_results=max_results,
         sync_sheets=not no_sheets,
