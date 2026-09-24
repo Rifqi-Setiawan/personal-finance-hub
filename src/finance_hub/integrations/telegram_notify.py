@@ -2,6 +2,7 @@
 
 import os
 import json
+import html
 import logging
 import urllib.request
 import urllib.error
@@ -64,17 +65,17 @@ class TelegramNotifier:
         tx: ParsedTransaction,
         cashflow: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Build Markdown-formatted alert message for Telegram."""
+        """Build HTML-formatted alert message for Telegram (bulletproof against special chars)."""
         tx_type = tx.transaction_type
 
         if tx_type == TransactionType.INCOME:
-            header = "💰 *Pemasukan Baru Dicatat!*"
+            header = "💰 <b>Pemasukan Baru Dicatat!</b>"
             sign = "+"
         elif tx_type == TransactionType.TRANSFER:
-            header = "🔁 *Transfer Dana Dicatat!*"
+            header = "🔁 <b>Transfer Dana Dicatat!</b>"
             sign = ""
         else:
-            header = "💸 *Pengeluaran Baru Dicatat!*"
+            header = "💸 <b>Pengeluaran Baru Dicatat!</b>"
             sign = "-"
 
         inst = tx.source_institution.value if hasattr(tx.source_institution, "value") else str(tx.source_institution)
@@ -90,31 +91,36 @@ class TelegramNotifier:
         except Exception:
             pass
 
+        safe_inst = html.escape(str(inst))
+        safe_account = html.escape(str(account))
+        safe_merchant = html.escape(str(tx.merchant))
+
         lines = [
             header,
             "━━━━━━━━━━━━━━━━━━━",
-            f"▫️ *Nominal:* `{amount_str}`",
-            f"▫️ *Sumber:* {inst} ({account})",
-            f"▫️ *Pihak/Merchant:* {tx.merchant}",
+            f"▫️ <b>Nominal:</b> <code>{html.escape(amount_str)}</code>",
+            f"▫️ <b>Sumber:</b> {safe_inst} ({safe_account})",
+            f"▫️ <b>Pihak/Merchant:</b> {safe_merchant}",
         ]
 
         if tx.category:
             bucket_str = f" ({tx.budget_bucket.value})" if tx.budget_bucket else ""
-            lines.append(f"▫️ *Kategori:* {tx.category}{bucket_str}")
+            safe_cat = html.escape(f"{tx.category}{bucket_str}")
+            lines.append(f"▫️ <b>Kategori:</b> {safe_cat}")
 
-        lines.append(f"▫️ *Waktu:* {time_display}")
+        lines.append(f"▫️ <b>Waktu:</b> {html.escape(time_display)}")
 
         if tx.notes:
-            lines.append(f"▫️ *Catatan:* _{tx.notes}_")
+            lines.append(f"▫️ <b>Catatan:</b> <i>{html.escape(tx.notes)}</i>")
 
         if cashflow:
             lines.append("━━━━━━━━━━━━━━━━━━━")
             net_rem = cashflow.get("formatted_net_remaining")
             if net_rem:
-                lines.append(f"📊 *Sisa Kas Minggu Ini:* `{net_rem}`")
+                lines.append(f"📊 <b>Sisa Kas Minggu Ini:</b> <code>{html.escape(net_rem)}</code>")
             exp_tot = cashflow.get("formatted_expense")
             if exp_tot:
-                lines.append(f"📉 *Total Pengeluaran Minggu Ini:* `{exp_tot}`")
+                lines.append(f"📉 <b>Total Pengeluaran Minggu Ini:</b> <code>{html.escape(exp_tot)}</code>")
 
         return "\n".join(lines)
 
@@ -133,7 +139,7 @@ class TelegramNotifier:
         payload = {
             "chat_id": self.chat_id,
             "text": message_text,
-            "parse_mode": "Markdown",
+            "parse_mode": "HTML",
             "disable_web_page_preview": True,
         }
 
