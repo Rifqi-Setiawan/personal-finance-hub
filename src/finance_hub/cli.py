@@ -5,6 +5,7 @@ import os
 import argparse
 import json
 import urllib.request
+import urllib.error
 from typing import Optional, Dict, Any
 
 # Ensure src is in sys.path when executed directly
@@ -334,7 +335,7 @@ def cmd_poll_gmail(
                 headers={"User-Agent": "FinanceHubCLI/1.0"},
                 method="POST",
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=60) as resp:
                 if resp.status == 200:
                     result = json.loads(resp.read().decode("utf-8"))
                     print(f" Polled Messages : {result.get('polled_count', 0)}")
@@ -343,6 +344,16 @@ def cmd_poll_gmail(
                     print(f" Ignored/Invalid : {result.get('ignored_count', 0)}")
                     print("=" * 64)
                     return
+        except urllib.error.HTTPError as err:
+            if err.code == 401:
+                print(
+                    "❌ Gmail is not authenticated. Token expired or missing. Jalankan: python -m finance_hub.cli auth-gmail --start"
+                )
+                return
+            else:
+                body = err.read().decode("utf-8", errors="replace")
+                print(f"❌ Server error (HTTP {err.code}): {body}")
+                return
         except Exception:
             pass
 

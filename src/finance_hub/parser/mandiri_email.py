@@ -34,8 +34,11 @@ MONTH_MAP = {
 
 
 def parse_mandiri_email_amount(val_str: str) -> float:
-    """Parse Indonesian Rupiah amount string like 'Rp 15.000,00' or '15.000' to float."""
-    cleaned = val_str.replace("Rp", "").replace("IDR", "").strip()
+    """Parse Indonesian Rupiah amount string like 'Rp 15.000,00', 'Top-up Rp 100.000,00' or '15.000' to float."""
+    m = re.search(r'([\d.,]+)', val_str)
+    if not m:
+        return 0.0
+    cleaned = m.group(1).strip()
     if "," in cleaned:
         parts = cleaned.split(",")
         integer_part = parts[0].replace(".", "").replace(" ", "").strip()
@@ -91,12 +94,12 @@ def extract_mandiri_email_fields(text: str) -> Dict[str, str]:
     lines = [line.strip().strip("|").strip() for line in text.splitlines() if line.strip()]
 
     known_patterns = [
-        ("nominal_transaksi", r"^(?:nominal\s*transaksi|total\s*transaksi|total\s*bayar|total)\s*[:\s]\s*(.+)$"),
+        ("nominal_transaksi", r"^(?:nominal\s*top[\s\-]*up|nominal\s*transaksi|total\s*transaksi|total\s*bayar|total)\s*[:\s]\s*(.+)$"),
         ("nominal", r"^(?:nominal|jumlah)\s*[:\s]\s*(.+)$"),
         ("tanggal", r"^(?:tanggal|tgl)\s*[:\s]\s*(.+)$"),
         ("jam", r"^(?:jam|waktu)\s*[:\s]\s*(\d{1,2}:\d{2}(?::\d{2})?.*)$"),
         ("no_ref_qris", r"^(?:no\.?\s*ref\.?\s*qris)\s*[:\s]\s*(.+)$"),
-        ("no_referensi", r"^(?:no\.?\s*ref(?:erensi)?)\s*[:\s]\s*(.+)$"),
+        ("no_referensi", r"^(?:no\.?\s*ref(?:erensi)?|nomor\s*referensi)\s*[:\s]\s*(.+)$"),
         ("merchant_pan", r"^(?:merchant\s*pan)\s*[:\s]\s*(.+)$"),
         ("customer_pan", r"^(?:customer\s*pan)\s*[:\s]\s*(.+)$"),
         ("pengakuisisi", r"^(?:pengakuisisi)\s*[:\s]\s*(.+)$"),
@@ -104,7 +107,7 @@ def extract_mandiri_email_fields(text: str) -> Dict[str, str]:
         ("jenis_transaksi", r"^(?:jenis\s*transaksi)\s*[:\s]\s*(.+)$"),
         ("status", r"^(?:status)\s*[:\s]\s*(.+)$"),
         ("no_rekening", r"^(?:no\.?\s*rek(?:ening)?|rekening\s*sumber|dari\s*rekening)\s*[:\s]\s*(.+)$"),
-        ("merchant", r"^(?:nama\s*merchant|merchant|tujuan\s*transfer|nama\s*penerima|penerima|tujuan)\s*[:\s]\s*(.+)$"),
+        ("merchant", r"^(?:nama\s*merchant|merchant|tujuan\s*transfer|nama\s*penerima|penerima|tujuan|penyedia\s*jasa)\s*[:\s]\s*(.+)$"),
     ]
 
     i = 0
@@ -136,11 +139,12 @@ def extract_mandiri_email_fields(text: str) -> Dict[str, str]:
 
         # 3. Block headers (e.g. "Penerima\nES TEH MANIS SOLO NISSA\nDEPOK - ID")
         line_clean = line.strip("*# ").lower()
-        if line_clean in ("penerima", "tujuan", "merchant", "tujuan transfer"):
+        if line_clean in ("penerima", "tujuan", "merchant", "tujuan transfer", "penyedia jasa"):
             if i + 1 < len(lines):
-                fields["merchant"] = lines[i + 1].strip()
-                if i + 2 < len(lines) and (" - id" in lines[i + 2].lower() or "kota" in lines[i + 2].lower()):
-                    fields["merchant_location"] = lines[i + 2].strip()
+                val = lines[i + 1].strip()
+                if i + 2 < len(lines) and ("*" in lines[i + 2] or re.search(r'\d{4}', lines[i + 2]) or " - id" in lines[i + 2].lower()):
+                    val += f" {lines[i + 2].strip()}"
+                fields["merchant"] = val
             i += 1
             continue
 
@@ -179,6 +183,8 @@ class MandiriEmailParser:
             or "pembayaran berhasil" in sub_lower
             or "transfer berhasil" in sub_lower
             or "transaksi berhasil" in sub_lower
+            or "top-up" in sub_lower
+            or "top up" in sub_lower
             or "transaction notification" in sub_lower
             or "struk transaksi" in sub_lower
             or "bukti transaksi" in sub_lower
@@ -225,6 +231,9 @@ class MandiriEmailParser:
         # Detect QR / QRIS
         if "qris" in raw_tx_type or "dengan qr" in b_lower or "no_ref_qris" in fields or "merchant_pan" in fields:
             payment_method = "QRIS"
+            tx_type = TransactionType.EXPENSE
+        elif "top-up e-money" in b_lower or "top up e-money" in b_lower or "e-money" in subject.lower():
+            payment_method = "E_MONEY"
             tx_type = TransactionType.EXPENSE
         elif "transfer masuk" in raw_tx_type or "penerimaan" in raw_tx_type or "dana masuk" in raw_tx_type or "uang masuk" in b_lower:
             payment_method = "BI_FAST" if ("bi-fast" in raw_tx_type or "bifast" in raw_tx_type or "bi-fast" in b_lower) else "BANK_TRANSFER"
